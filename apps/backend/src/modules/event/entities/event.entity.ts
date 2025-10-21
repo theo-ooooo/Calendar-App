@@ -99,6 +99,16 @@ export class Event {
   calendar: Calendar;
 
   @ManyToMany(() => User, (user) => user.attendingEvents)
-  @JoinTable()
+  @JoinTable({
+    name: "event_attendees",
+    joinColumn: {
+      name: "eventId",
+      referencedColumnName: "id",
+    },
+    inverseJoinColumn: {
+      name: "userId",
+      referencedColumnName: "id",
+    },
+  })
   attendees: User[];
 }

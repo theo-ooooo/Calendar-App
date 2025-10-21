@@ -91,6 +91,5 @@ export class User {
   createdEvents: Event[];
 
   @ManyToMany(() => Event, (event) => event.attendees)
-  @JoinTable()
   attendingEvents: Event[];
 }
