@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "next/navigation";
 
 export function Dashboard() {
   const { user, isAuthenticated, isLoading, refreshUser } = useAuthStore();
@@ -10,11 +10,11 @@ export function Dashboard() {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (token && !isAuthenticated) {
         await refreshUser();
       } else if (!token) {
-        router.push('/login');
+        router.push("/login");
       }
     };
 
@@ -39,10 +39,14 @@ export function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">일정공유 서비스</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                일정공유 서비스
+              </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">안녕하세요, {user.name}님</span>
+              <span className="text-sm text-gray-700">
+                안녕하세요, {user.name}님
+              </span>
               <button
                 onClick={() => useAuthStore.getState().logout()}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -80,7 +84,10 @@ export function Dashboard() {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a href="/teams" className="font-medium text-blue-600 hover:text-blue-500">
+                  <a
+                    href="/teams"
+                    className="font-medium text-blue-600 hover:text-blue-500"
+                  >
                     팀 관리하기
                   </a>
                 </div>
@@ -110,7 +117,10 @@ export function Dashboard() {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a href="/calendars" className="font-medium text-green-600 hover:text-green-500">
+                  <a
+                    href="/calendars"
+                    className="font-medium text-green-600 hover:text-green-500"
+                  >
                     캘린더 관리하기
                   </a>
                 </div>
@@ -140,7 +150,10 @@ export function Dashboard() {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a href="/events" className="font-medium text-purple-600 hover:text-purple-500">
+                  <a
+                    href="/events"
+                    className="font-medium text-purple-600 hover:text-purple-500"
+                  >
                     이벤트 관리하기
                   </a>
                 </div>
