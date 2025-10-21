@@ -7,32 +7,32 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
-} from 'typeorm';
-import { Exclude } from 'class-transformer';
-import { Team } from '../../team/entities/team.entity';
-import { TeamMember } from '../../team/entities/team-member.entity';
-import { Calendar } from '../../calendar/entities/calendar.entity';
-import { Event } from '../../event/entities/event.entity';
+} from "typeorm";
+import { Exclude } from "class-transformer";
+import { Team } from "../../team/entities/team.entity";
+import { TeamMember } from "../../team/entities/team-member.entity";
+import { Calendar } from "../../calendar/entities/calendar.entity";
+import { Event } from "../../event/entities/event.entity";
 
 export const UserRole = {
-  USER: 'user',
-  ADMIN: 'admin',
+  USER: "user",
+  ADMIN: "admin",
 } as const;
 
-export type UserRole = typeof UserRole[keyof typeof UserRole];
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const AuthProvider = {
-  LOCAL: 'local',
-  GOOGLE: 'google',
-  KAKAO: 'kakao',
-  NAVER: 'naver',
+  LOCAL: "local",
+  GOOGLE: "google",
+  KAKAO: "kakao",
+  NAVER: "naver",
 } as const;
 
-export type AuthProvider = typeof AuthProvider[keyof typeof AuthProvider];
+export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider];
 
-@Entity('users')
+@Entity("users")
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ unique: true })
@@ -49,15 +49,15 @@ export class User {
   profileImage?: string;
 
   @Column({
-    type: 'enum',
-    enum: UserRole,
+    type: "varchar",
+    length: 20,
     default: UserRole.USER,
   })
   role: UserRole;
 
   @Column({
-    type: 'enum',
-    enum: AuthProvider,
+    type: "varchar",
+    length: 20,
     default: AuthProvider.LOCAL,
   })
   provider: AuthProvider;
@@ -93,5 +93,4 @@ export class User {
   @ManyToMany(() => Event, (event) => event.attendees)
   @JoinTable()
   attendingEvents: Event[];
-
 }
