@@ -31,9 +31,16 @@ export class CalendarController {
   }
 
   @Get()
-  @ApiOperation({ summary: '사용자의 캘린더 목록 조회' })
+  @ApiOperation({ summary: '사용자의 모든 캘린더 목록 조회 (개인 + 팀)' })
   @ApiResponse({ status: 200, description: '캘린더 목록 조회 성공' })
   async getCalendars(@Request() req) {
+    return this.calendarService.getAllUserCalendars(req.user.id);
+  }
+
+  @Get('personal')
+  @ApiOperation({ summary: '사용자의 개인 캘린더 목록 조회' })
+  @ApiResponse({ status: 200, description: '개인 캘린더 목록 조회 성공' })
+  async getPersonalCalendars(@Request() req) {
     return this.calendarService.getCalendarsByUser(req.user.id);
   }
 

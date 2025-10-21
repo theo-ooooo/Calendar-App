@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { Calendar, CalendarType } from './entities/calendar.entity';
 import { CreateCalendarDto } from './dto/create-calendar.dto';
 import { UpdateCalendarDto } from './dto/update-calendar.dto';
+import { TeamMember } from '../team/entities/team-member.entity';
 
 @Injectable()
 export class CalendarService {
   constructor(
     @InjectRepository(Calendar)
     private readonly calendarRepository: Repository<Calendar>,
+    @InjectRepository(TeamMember)
+    private readonly teamMemberRepository: Repository<TeamMember>,
   ) {}
 
   async createCalendar(userId: string, createCalendarDto: CreateCalendarDto): Promise<Calendar> {
@@ -28,6 +31,42 @@ export class CalendarService {
       relations: ['team'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async getAllUserCalendars(userId: string): Promise<Calendar[]> {
+    // 개인 캘린더 조회
+    const personalCalendars = await this.calendarRepository.find({
+      where: { ownerId: userId, type: CalendarType.PERSONAL },
+      relations: ['owner'],
+      order: { createdAt: 'DESC' },
+    });
+
+    // 사용자가 속한 팀들의 캘린더 조회
+    const userTeams = await this.teamMemberRepository.find({
+      where: { 
+        userId, 
+        status: 'accepted' 
+      },
+      relations: ['team'],
+    });
+
+    const teamCalendars = await Promise.all(
+      userTeams.map(async (teamMember) => {
+        return this.calendarRepository.find({
+          where: { teamId: teamMember.team.id },
+          relations: ['team', 'owner'],
+          order: { createdAt: 'DESC' },
+        });
+      })
+    );
+
+    // 모든 캘린더를 하나의 배열로 합치기
+    const allCalendars = [
+      ...personalCalendars,
+      ...teamCalendars.flat(),
+    ];
+
+    return allCalendars;
   }
 
   async getCalendarById(id: string, userId: string): Promise<Calendar> {
