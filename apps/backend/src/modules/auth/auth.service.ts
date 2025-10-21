@@ -3,17 +3,17 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import * as bcrypt from "bcryptjs";
 
-import { User, AuthProvider } from '../user/entities/user.entity';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { RefreshTokenService } from './refresh-token.service';
+import { User, AuthProvider } from "../user/entities/user.entity";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { RefreshTokenService } from "./refresh-token.service";
 
 @Injectable()
 export class AuthService {
@@ -21,16 +21,20 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly refreshTokenService: RefreshTokenService,
+    private readonly refreshTokenService: RefreshTokenService
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+  async register(
+    registerDto: RegisterDto
+  ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const { email, password, name } = registerDto;
 
     // 이메일 중복 확인
-    const existingUser = await this.userRepository.findOne({ where: { email } });
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
     if (existingUser) {
-      throw new ConflictException('이미 사용 중인 이메일입니다.');
+      throw new ConflictException("이미 사용 중인 이메일입니다.");
     }
 
     // 비밀번호 해시화
@@ -51,11 +55,12 @@ export class AuthService {
       sub: savedUser.id,
       email: savedUser.email,
       name: savedUser.name,
-      type: 'access',
+      type: "access",
     };
 
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = await this.refreshTokenService.generateRefreshToken(savedUser);
+    const refreshToken =
+      await this.refreshTokenService.generateRefreshToken(savedUser);
 
     return {
       user: savedUser,
@@ -64,24 +69,32 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+  async login(
+    loginDto: LoginDto,
+    deviceInfo?: string,
+    ipAddress?: string
+  ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const { email, password } = loginDto;
 
     // 사용자 찾기
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(
+        "이메일 또는 비밀번호가 올바르지 않습니다."
+      );
     }
 
     // 비밀번호 확인
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(
+        "이메일 또는 비밀번호가 올바르지 않습니다."
+      );
     }
 
     // 활성 상태 확인
     if (!user.isActive) {
-      throw new UnauthorizedException('비활성화된 계정입니다.');
+      throw new UnauthorizedException("비활성화된 계정입니다.");
     }
 
     // 마지막 로그인 시간 업데이트
@@ -93,11 +106,15 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
-      type: 'access',
+      type: "access",
     };
 
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = await this.refreshTokenService.generateRefreshToken(user, deviceInfo, ipAddress);
+    const refreshToken = await this.refreshTokenService.generateRefreshToken(
+      user,
+      deviceInfo,
+      ipAddress
+    );
 
     return {
       user,
@@ -106,16 +123,21 @@ export class AuthService {
     };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const tokenData = await this.refreshTokenService.validateRefreshToken(refreshToken);
-    
+  async refreshAccessToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const tokenData =
+      await this.refreshTokenService.validateRefreshToken(refreshToken);
+
     if (!tokenData) {
-      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+      throw new UnauthorizedException("유효하지 않은 리프레시 토큰입니다.");
     }
 
-    const user = await this.userRepository.findOne({ where: { id: tokenData.userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: tokenData.userId },
+    });
     if (!user) {
-      throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
+      throw new UnauthorizedException("사용자를 찾을 수 없습니다.");
     }
 
     // 새 액세스 토큰 생성
@@ -123,7 +145,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
-      type: 'access',
+      type: "access",
     };
 
     const newAccessToken = this.jwtService.sign(payload);
@@ -132,12 +154,12 @@ export class AuthService {
     const newRefreshToken = await this.refreshTokenService.generateRefreshToken(
       user,
       tokenData.deviceInfo,
-      tokenData.ipAddress,
+      tokenData.ipAddress
     );
 
     return {
       accessToken: newAccessToken,
-      refreshToken: newRefreshToken.token,
+      refreshToken: newRefreshToken,
     };
   }
 
@@ -151,7 +173,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { email } });
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     }
     return null;
@@ -164,7 +186,7 @@ export class AuthService {
     name: string,
     profileImage?: string,
     deviceInfo?: string,
-    ipAddress?: string,
+    ipAddress?: string
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     let user = await this.userRepository.findOne({
       where: { provider, providerId },
@@ -195,11 +217,15 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
-      type: 'access',
+      type: "access",
     };
 
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = await this.refreshTokenService.generateRefreshToken(user, deviceInfo, ipAddress);
+    const refreshToken = await this.refreshTokenService.generateRefreshToken(
+      user,
+      deviceInfo,
+      ipAddress
+    );
 
     return {
       user,
@@ -214,7 +240,7 @@ export class AuthService {
     });
 
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException("유효하지 않은 토큰입니다.");
     }
 
     return user;

@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-naver';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { Strategy } from "passport-naver";
+import { ConfigService } from "@nestjs/config";
 
-import { AuthProvider } from '../../user/entities/user.entity';
+import { AuthProvider } from "../../user/entities/user.entity";
 
 @Injectable()
-export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
+export class NaverStrategy extends PassportStrategy(Strategy, "naver") {
   constructor(private readonly configService: ConfigService) {
     super({
-      clientID: configService.get<string>('NAVER_CLIENT_ID'),
-      clientSecret: configService.get<string>('NAVER_CLIENT_SECRET'),
-      callbackURL: `${configService.get<string>('FRONTEND_URL')}/auth/naver/callback`,
+      clientID: configService.get<string>("NAVER_CLIENT_ID"),
+      clientSecret: configService.get<string>("NAVER_CLIENT_SECRET"),
+      callbackURL: `${configService.get<string>("FRONTEND_URL")}/auth/naver/callback`,
     });
   }
 
@@ -19,7 +19,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: any,
+    done: any
   ) {
     const { id, displayName, emails, photos } = profile;
     const user = {

@@ -1,10 +1,10 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
+import { JwtService } from "@nestjs/jwt";
 
-import { User } from '../user/entities/user.entity';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { User } from "../user/entities/user.entity";
+import { JwtPayload } from "./interfaces/jwt-payload.interface";
 
 interface RefreshTokenData {
   userId: string;
@@ -16,19 +16,19 @@ interface RefreshTokenData {
 
 @Injectable()
 export class RefreshTokenService {
-  private readonly REFRESH_TOKEN_PREFIX = 'refresh_token:';
-  private readonly USER_TOKENS_PREFIX = 'user_tokens:';
+  private readonly REFRESH_TOKEN_PREFIX = "refresh_token:";
+  private readonly USER_TOKENS_PREFIX = "user_tokens:";
   private readonly REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30일 (초 단위)
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   async generateRefreshToken(
     user: User,
     deviceInfo?: string,
-    ipAddress?: string,
+    ipAddress?: string
   ): Promise<string> {
     // 기존 사용자 토큰들 삭제
     await this.revokeAllUserTokens(user.id);
@@ -42,11 +42,11 @@ export class RefreshTokenService {
       sub: user.id,
       email: user.email,
       name: user.name,
-      type: 'refresh', // 토큰 타입 구분
+      type: "refresh", // 토큰 타입 구분
     };
 
     const token = this.jwtService.sign(payload, {
-      expiresIn: '30d',
+      expiresIn: "30d",
       secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
     });
 
@@ -60,13 +60,22 @@ export class RefreshTokenService {
 
     // Redis에 토큰 데이터 저장 (JWT 자체는 stateless이지만 추가 정보를 위해)
     const tokenKey = `${this.REFRESH_TOKEN_PREFIX}${token}`;
-    await this.cacheManager.set(tokenKey, tokenData, this.REFRESH_TOKEN_TTL * 1000);
+    await this.cacheManager.set(
+      tokenKey,
+      tokenData,
+      this.REFRESH_TOKEN_TTL * 1000
+    );
 
     // 사용자별 토큰 목록에 추가
     const userTokensKey = `${this.USER_TOKENS_PREFIX}${user.id}`;
-    const existingTokens = await this.cacheManager.get<string[]>(userTokensKey) || [];
+    const existingTokens =
+      (await this.cacheManager.get<string[]>(userTokensKey)) || [];
     existingTokens.push(token);
-    await this.cacheManager.set(userTokensKey, existingTokens, this.REFRESH_TOKEN_TTL * 1000);
+    await this.cacheManager.set(
+      userTokensKey,
+      existingTokens,
+      this.REFRESH_TOKEN_TTL * 1000
+    );
 
     return token;
   }
@@ -79,7 +88,7 @@ export class RefreshTokenService {
       });
 
       // 토큰 타입 확인
-      if (payload.type !== 'refresh') {
+      if (payload.type !== "refresh") {
         return null;
       }
 
@@ -114,11 +123,16 @@ export class RefreshTokenService {
 
       // 사용자별 토큰 목록에서 제거
       const userTokensKey = `${this.USER_TOKENS_PREFIX}${tokenData.userId}`;
-      const existingTokens = await this.cacheManager.get<string[]>(userTokensKey) || [];
-      const updatedTokens = existingTokens.filter(t => t !== token);
-      
+      const existingTokens =
+        (await this.cacheManager.get<string[]>(userTokensKey)) || [];
+      const updatedTokens = existingTokens.filter((t) => t !== token);
+
       if (updatedTokens.length > 0) {
-        await this.cacheManager.set(userTokensKey, updatedTokens, this.REFRESH_TOKEN_TTL * 1000);
+        await this.cacheManager.set(
+          userTokensKey,
+          updatedTokens,
+          this.REFRESH_TOKEN_TTL * 1000
+        );
       } else {
         await this.cacheManager.del(userTokensKey);
       }
@@ -127,7 +141,7 @@ export class RefreshTokenService {
 
   async revokeAllUserTokens(userId: string): Promise<void> {
     const userTokensKey = `${this.USER_TOKENS_PREFIX}${userId}`;
-    const tokens = await this.cacheManager.get<string[]>(userTokensKey) || [];
+    const tokens = (await this.cacheManager.get<string[]>(userTokensKey)) || [];
 
     // 모든 토큰 삭제
     for (const token of tokens) {
@@ -141,14 +155,14 @@ export class RefreshTokenService {
 
   async getUserActiveTokens(userId: string): Promise<RefreshTokenData[]> {
     const userTokensKey = `${this.USER_TOKENS_PREFIX}${userId}`;
-    const tokens = await this.cacheManager.get<string[]>(userTokensKey) || [];
-    
+    const tokens = (await this.cacheManager.get<string[]>(userTokensKey)) || [];
+
     const activeTokens: RefreshTokenData[] = [];
-    
+
     for (const token of tokens) {
       const tokenKey = `${this.REFRESH_TOKEN_PREFIX}${token}`;
       const tokenData = await this.cacheManager.get<RefreshTokenData>(tokenKey);
-      
+
       if (tokenData && tokenData.expiresAt > new Date()) {
         // JWT 토큰도 검증
         try {
