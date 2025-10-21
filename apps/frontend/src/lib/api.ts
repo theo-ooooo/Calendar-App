@@ -45,7 +45,9 @@ class ApiClient {
           }
         } catch (refreshError) {
           // Refresh failed, redirect to login
-          window.location.href = "/login";
+          if (typeof window !== 'undefined') {
+            window.location.href = "/login";
+          }
           throw refreshError;
         }
       }
