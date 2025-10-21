@@ -97,6 +97,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: async () => {
+        const state = get();
+        // 이미 초기화 중이거나 완료된 경우 중복 호출 방지
+        if (state.isLoading === false && state.user !== null) {
+          return;
+        }
+        
+        set({ isLoading: true });
+        
         try {
           const userData = await authApi.getProfile();
           set({

@@ -4,6 +4,7 @@ const API_BASE_URL =
 // Fetch wrapper with automatic token refresh
 class ApiClient {
   private baseURL: string;
+  private isRefreshing = false;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
@@ -29,8 +30,10 @@ class ApiClient {
       const response = await fetch(url, config);
 
       // Handle 401 Unauthorized with token refresh
-      if (response.status === 401 && !isRetry) {
+      if (response.status === 401 && !isRetry && !this.isRefreshing) {
+        this.isRefreshing = true;
         try {
+          // refresh API 호출 (무한 루프 방지를 위해 isRetry 체크 없이)
           const refreshResponse = await fetch(`${this.baseURL}/auth/refresh`, {
             method: "POST",
             headers: {
@@ -41,9 +44,11 @@ class ApiClient {
 
           if (refreshResponse.ok) {
             // Retry original request
+            this.isRefreshing = false;
             return this.request<T>(endpoint, options, true);
           } else {
             // Refresh failed, clear tokens and redirect to login
+            this.isRefreshing = false;
             if (typeof window !== "undefined") {
               try {
                 localStorage.removeItem("accessToken");
@@ -57,6 +62,7 @@ class ApiClient {
           }
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
+          this.isRefreshing = false;
           if (typeof window !== "undefined") {
             // Clear any stored tokens (if any) - only on client side
             try {

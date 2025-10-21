@@ -12,10 +12,14 @@ interface ProvidersProps {
 function AuthInitializer() {
   const initialize = useAuthStore((state) => state.initialize);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    // 한 번만 초기화 실행
+    if (isLoading) {
+      initialize();
+    }
+  }, []); // 빈 의존성 배열로 한 번만 실행
 
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {

@@ -105,7 +105,7 @@ export function useEvents(
 
   useEffect(() => {
     loadEvents();
-  }, [startDateString, endDateString]);
+  }, [loadEvents]);
 
   return {
     events,
