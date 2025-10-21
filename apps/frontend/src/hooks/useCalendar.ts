@@ -28,7 +28,9 @@ export function useCalendar() {
 
       startTransition(() => {
         setCalendars(allCalendars);
-        setSelectedCalendars(allCalendars.map((cal) => cal.id));
+        const calendarIds = allCalendars.map((cal) => cal.id);
+        console.log("캘린더 로드 완료:", { allCalendars, calendarIds });
+        setSelectedCalendars(calendarIds);
       });
     } catch (err) {
       setError("캘린더를 불러오는데 실패했습니다.");
