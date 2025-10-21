@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-kakao';
+import { Strategy } from 'passport-kakao';
 import { ConfigService } from '@nestjs/config';
 
 import { AuthProvider } from '../../user/entities/user.entity';
@@ -19,7 +19,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: VerifyCallback,
+    done: any,
   ) {
     const { id, username, _json } = profile;
     const user = {

@@ -10,7 +10,6 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 
 import { User, AuthProvider } from '../user/entities/user.entity';
-import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -21,8 +20,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(RefreshToken)
-    private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
@@ -63,7 +60,7 @@ export class AuthService {
     return {
       user: savedUser,
       accessToken,
-      refreshToken: refreshToken.token,
+      refreshToken,
     };
   }
 
@@ -105,7 +102,7 @@ export class AuthService {
     return {
       user,
       accessToken,
-      refreshToken: refreshToken.token,
+      refreshToken,
     };
   }
 
@@ -116,7 +113,10 @@ export class AuthService {
       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
     }
 
-    const user = tokenData.user;
+    const user = await this.userRepository.findOne({ where: { id: tokenData.userId } });
+    if (!user) {
+      throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
+    }
 
     // 새 액세스 토큰 생성
     const payload: JwtPayload = {
@@ -204,7 +204,7 @@ export class AuthService {
     return {
       user,
       accessToken,
-      refreshToken: refreshToken.token,
+      refreshToken,
     };
   }
 
@@ -220,7 +220,7 @@ export class AuthService {
     return user;
   }
 
-  async getUserActiveTokens(userId: string): Promise<RefreshToken[]> {
+  async getUserActiveTokens(userId: string) {
     return this.refreshTokenService.getUserActiveTokens(userId);
   }
 }

@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, CACHE_MANAGER as CACHE_MANAGER_TOKEN } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { JwtService } from '@nestjs/jwt';
 
@@ -22,7 +21,7 @@ export class RefreshTokenService {
   private readonly REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30일 (초 단위)
 
   constructor(
-    @Inject(CACHE_MANAGER_TOKEN) private readonly cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly jwtService: JwtService,
   ) {}
 

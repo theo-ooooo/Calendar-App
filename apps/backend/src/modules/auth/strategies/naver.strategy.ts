@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-naver';
+import { Strategy } from 'passport-naver';
 import { ConfigService } from '@nestjs/config';
 
 import { AuthProvider } from '../../user/entities/user.entity';
@@ -19,7 +19,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: VerifyCallback,
+    done: any,
   ) {
     const { id, displayName, emails, photos } = profile;
     const user = {
