@@ -12,21 +12,21 @@ interface AuthState {
   refreshUser: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   setUser: (user: User) => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      isLoading: false,
+      isLoading: true, // 초기 로딩 상태로 변경
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
           const response = await authApi.login({ email, password });
-          localStorage.setItem("accessToken", response.accessToken);
-          localStorage.setItem("refreshToken", response.refreshToken);
+          // 쿠키는 서버에서 설정되므로 클라이언트에서는 처리하지 않음
           set({
             user: response.user,
             isAuthenticated: true,
@@ -42,8 +42,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const response = await authApi.register({ email, password, name });
-          localStorage.setItem("accessToken", response.accessToken);
-          localStorage.setItem("refreshToken", response.refreshToken);
+          // 쿠키는 서버에서 설정되므로 클라이언트에서는 처리하지 않음
           set({
             user: response.user,
             isAuthenticated: true,
@@ -58,15 +57,10 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          const refreshToken = localStorage.getItem("refreshToken");
-          if (refreshToken) {
-            await authApi.logout(refreshToken);
-          }
+          await authApi.logout();
         } catch (error) {
           console.error("Logout error:", error);
         } finally {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
           set({
             user: null,
             isAuthenticated: false,
@@ -100,6 +94,24 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user: User) => {
         set({ user });
+      },
+
+      initialize: async () => {
+        try {
+          const userData = await authApi.getProfile();
+          set({
+            user: userData,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error("Failed to initialize auth:", error);
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
       },
     }),
     {
