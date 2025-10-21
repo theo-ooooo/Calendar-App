@@ -43,7 +43,10 @@ export function useEvents(
   }, [startDate, endDate]);
 
   // 날짜가 실제로 변경되었을 때만 이벤트를 다시 로드
-  const startDateString = useMemo(() => format(startDate, "yyyy-MM-dd"), [startDate]);
+  const startDateString = useMemo(
+    () => format(startDate, "yyyy-MM-dd"),
+    [startDate]
+  );
   const endDateString = useMemo(() => format(endDate, "yyyy-MM-dd"), [endDate]);
 
   const getEventsForDate = useCallback(
