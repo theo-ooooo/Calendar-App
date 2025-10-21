@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from "./api";
 
 export interface User {
   id: string;
@@ -32,40 +32,53 @@ export interface RegisterCredentials {
 export const authApi = {
   // 로그인
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', credentials);
+    const response = await api.post<{ status: boolean; data: AuthResponse }>(
+      "/auth/login",
+      credentials
+    );
     return response.data;
   },
 
   // 회원가입
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', credentials);
+    const response = await api.post<{ status: boolean; data: AuthResponse }>(
+      "/auth/register",
+      credentials
+    );
     return response.data;
   },
 
   // 프로필 조회
   getProfile: async (): Promise<User> => {
-    const response = await api.get('/auth/profile');
+    const response = await api.get<{ status: boolean; data: User }>(
+      "/auth/profile"
+    );
     return response.data;
   },
 
   // 토큰 갱신
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await api.post('/auth/refresh', { refreshToken });
+    const response = await api.post<{ status: boolean; data: AuthResponse }>(
+      "/auth/refresh",
+      { refreshToken }
+    );
     return response.data;
   },
 
   // 로그아웃
   logout: async (refreshToken: string): Promise<void> => {
-    await api.post('/auth/logout', { refreshToken });
+    await api.post("/auth/logout", { refreshToken });
   },
 
   // 모든 기기 로그아웃
   logoutAll: async (): Promise<void> => {
-    await api.post('/auth/logout-all');
+    await api.post("/auth/logout-all");
   },
 
   // 소셜 로그인 URL 생성
-  getSocialLoginUrl: (provider: 'google' | 'kakao' | 'naver'): string => {
-    return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/${provider}`;
+  getSocialLoginUrl: (provider: "google" | "kakao" | "naver"): string => {
+    return `${
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
+    }/auth/${provider}`;
   },
 };

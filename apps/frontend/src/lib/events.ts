@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from "./api";
 
 export interface Event {
   id: string;
@@ -7,10 +7,10 @@ export interface Event {
   startDate: string;
   endDate: string;
   location?: string;
-  status: 'tentative' | 'confirmed' | 'cancelled';
+  status: "tentative" | "confirmed" | "cancelled";
   isAllDay: boolean;
   reminder?: number;
-  repeatType: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  repeatType: "none" | "daily" | "weekly" | "monthly" | "yearly";
   repeatUntil?: string;
   isPublic: boolean;
   createdAt: string;
@@ -39,10 +39,10 @@ export interface CreateEventData {
   startDate: string;
   endDate: string;
   location?: string;
-  status?: 'tentative' | 'confirmed' | 'cancelled';
+  status?: "tentative" | "confirmed" | "cancelled";
   isAllDay?: boolean;
   reminder?: number;
-  repeatType?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  repeatType?: "none" | "daily" | "weekly" | "monthly" | "yearly";
   repeatUntil?: string;
   isPublic?: boolean;
   calendarId: string;
@@ -55,10 +55,10 @@ export interface UpdateEventData {
   startDate?: string;
   endDate?: string;
   location?: string;
-  status?: 'tentative' | 'confirmed' | 'cancelled';
+  status?: "tentative" | "confirmed" | "cancelled";
   isAllDay?: boolean;
   reminder?: number;
-  repeatType?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  repeatType?: "none" | "daily" | "weekly" | "monthly" | "yearly";
   repeatUntil?: string;
   isPublic?: boolean;
   attendeeEmails?: string[];
@@ -67,49 +67,52 @@ export interface UpdateEventData {
 export const eventsApi = {
   // 이벤트 생성
   createEvent: async (data: CreateEventData): Promise<Event> => {
-    const response = await api.post('/events', data);
+    const response = await api.post<{ status: boolean; data: Event }>("/events", data);
     return response.data;
   },
 
   // 캘린더별 이벤트 목록 조회
   getEventsByCalendar: async (calendarId: string): Promise<Event[]> => {
-    const response = await api.get(`/events/calendar/${calendarId}`);
+    const response = await api.get<{ status: boolean; data: Event[] }>(`/events/calendar/${calendarId}`);
     return response.data;
   },
 
   // 날짜 범위별 이벤트 조회
-  getEventsByDateRange: async (startDate: string, endDate: string): Promise<Event[]> => {
-    const response = await api.get('/events/date-range', {
-      params: { startDate, endDate }
+  getEventsByDateRange: async (
+    startDate: string,
+    endDate: string
+  ): Promise<Event[]> => {
+    const response = await api.get<{ status: boolean; data: Event[] }>("/events/date-range", {
+      params: { startDate, endDate },
     });
     return response.data;
   },
 
   // 이벤트 검색
   searchEvents: async (query: string): Promise<Event[]> => {
-    const response = await api.get('/events/search', {
-      params: { q: query }
+    const response = await api.get<{ status: boolean; data: Event[] }>("/events/search", {
+      params: { q: query },
     });
     return response.data;
   },
 
   // 다가오는 이벤트 조회
   getUpcomingEvents: async (limit?: number): Promise<Event[]> => {
-    const response = await api.get('/events/upcoming', {
-      params: { limit }
+    const response = await api.get<{ status: boolean; data: Event[] }>("/events/upcoming", {
+      params: { limit },
     });
     return response.data;
   },
 
   // 이벤트 상세 조회
   getEvent: async (id: string): Promise<Event> => {
-    const response = await api.get(`/events/${id}`);
+    const response = await api.get<{ status: boolean; data: Event }>(`/events/${id}`);
     return response.data;
   },
 
   // 이벤트 수정
   updateEvent: async (id: string, data: UpdateEventData): Promise<Event> => {
-    const response = await api.put(`/events/${id}`, data);
+    const response = await api.put<{ status: boolean; data: Event }>(`/events/${id}`, data);
     return response.data;
   },
 

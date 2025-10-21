@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from "./api";
 
 export interface Team {
   id: string;
@@ -20,8 +20,8 @@ export interface Team {
 
 export interface TeamMember {
   id: string;
-  role: 'member' | 'admin';
-  status: 'pending' | 'accepted' | 'rejected';
+  role: "member" | "admin";
+  status: "pending" | "accepted" | "rejected";
   invitedBy?: string;
   invitedAt?: string;
   joinedAt?: string;
@@ -55,25 +55,33 @@ export interface InviteMemberData {
 export const teamsApi = {
   // 팀 생성
   createTeam: async (data: CreateTeamData): Promise<Team> => {
-    const response = await api.post('/teams', data);
+    const response = await api.post<{ status: boolean; data: Team }>(
+      "/teams",
+      data
+    );
     return response.data;
   },
 
   // 사용자의 팀 목록 조회
   getTeams: async (): Promise<Team[]> => {
-    const response = await api.get('/teams');
+    const response = await api.get<{ status: boolean; data: Team[] }>("/teams");
     return response.data;
   },
 
   // 팀 상세 조회
   getTeam: async (id: string): Promise<Team> => {
-    const response = await api.get(`/teams/${id}`);
+    const response = await api.get<{ status: boolean; data: Team }>(
+      `/teams/${id}`
+    );
     return response.data;
   },
 
   // 팀 정보 수정
   updateTeam: async (id: string, data: UpdateTeamData): Promise<Team> => {
-    const response = await api.put(`/teams/${id}`, data);
+    const response = await api.put<{ status: boolean; data: Team }>(
+      `/teams/${id}`,
+      data
+    );
     return response.data;
   },
 
@@ -84,21 +92,30 @@ export const teamsApi = {
 
   // 초대 코드로 팀 참여
   joinTeam: async (inviteCode: string): Promise<Team> => {
-    const response = await api.post('/teams/join', null, {
-      params: { code: inviteCode }
-    });
+    const response = await api.post<{ status: boolean; data: Team }>(
+      "/teams/join",
+      { code: inviteCode }
+    );
     return response.data;
   },
 
   // 팀 멤버 초대
-  inviteMember: async (teamId: string, data: InviteMemberData): Promise<TeamMember> => {
-    const response = await api.post(`/teams/${teamId}/invite`, data);
+  inviteMember: async (
+    teamId: string,
+    data: InviteMemberData
+  ): Promise<TeamMember> => {
+    const response = await api.post<{ status: boolean; data: TeamMember }>(
+      `/teams/${teamId}/invite`,
+      data
+    );
     return response.data;
   },
 
   // 팀 초대 수락
   acceptInvitation: async (teamId: string): Promise<TeamMember> => {
-    const response = await api.post(`/teams/${teamId}/accept`);
+    const response = await api.post<{ status: boolean; data: TeamMember }>(
+      `/teams/${teamId}/accept`
+    );
     return response.data;
   },
 
