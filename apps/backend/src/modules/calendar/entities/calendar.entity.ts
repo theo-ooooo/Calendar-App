@@ -12,10 +12,12 @@ import { User } from '../../user/entities/user.entity';
 import { Team } from '../../team/entities/team.entity';
 import { Event } from '../../event/entities/event.entity';
 
-export enum CalendarType {
-  PERSONAL = 'personal',
-  TEAM = 'team',
-}
+export const CalendarType = {
+  PERSONAL: 'personal',
+  TEAM: 'team',
+} as const;
+
+export type CalendarType = (typeof CalendarType)[keyof typeof CalendarType];
 
 @Entity('calendars')
 export class Calendar {
@@ -32,8 +34,8 @@ export class Calendar {
   color: string;
 
   @Column({
-    type: 'enum',
-    enum: CalendarType,
+    type: 'varchar',
+    length: 20,
     default: CalendarType.PERSONAL,
   })
   type: CalendarType;

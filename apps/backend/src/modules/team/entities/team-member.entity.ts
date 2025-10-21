@@ -10,16 +10,20 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Team } from './team.entity';
 
-export enum TeamMemberRole {
-  MEMBER = 'member',
-  ADMIN = 'admin',
-}
+export const TeamMemberRole = {
+  MEMBER: 'member',
+  ADMIN: 'admin',
+} as const;
 
-export enum TeamMemberStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
+export type TeamMemberRole = (typeof TeamMemberRole)[keyof typeof TeamMemberRole];
+
+export const TeamMemberStatus = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+} as const;
+
+export type TeamMemberStatus = (typeof TeamMemberStatus)[keyof typeof TeamMemberStatus];
 
 @Entity('team_members')
 export class TeamMember {
@@ -27,15 +31,15 @@ export class TeamMember {
   id: string;
 
   @Column({
-    type: 'enum',
-    enum: TeamMemberRole,
+    type: 'varchar',
+    length: 20,
     default: TeamMemberRole.MEMBER,
   })
   role: TeamMemberRole;
 
   @Column({
-    type: 'enum',
-    enum: TeamMemberStatus,
+    type: 'varchar',
+    length: 20,
     default: TeamMemberStatus.PENDING,
   })
   status: TeamMemberStatus;

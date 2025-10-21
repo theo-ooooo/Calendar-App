@@ -12,19 +12,23 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Calendar } from '../../calendar/entities/calendar.entity';
 
-export enum EventStatus {
-  TENTATIVE = 'tentative',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
-}
+export const EventStatus = {
+  TENTATIVE: 'tentative',
+  CONFIRMED: 'confirmed',
+  CANCELLED: 'cancelled',
+} as const;
 
-export enum EventRepeatType {
-  NONE = 'none',
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  YEARLY = 'yearly',
-}
+export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
+
+export const EventRepeatType = {
+  NONE: 'none',
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+} as const;
+
+export type EventRepeatType = (typeof EventRepeatType)[keyof typeof EventRepeatType];
 
 @Entity('events')
 export class Event {
@@ -47,8 +51,8 @@ export class Event {
   location?: string;
 
   @Column({
-    type: 'enum',
-    enum: EventStatus,
+    type: 'varchar',
+    length: 20,
     default: EventStatus.CONFIRMED,
   })
   status: EventStatus;
@@ -60,8 +64,8 @@ export class Event {
   reminder?: number; // 분 단위
 
   @Column({
-    type: 'enum',
-    enum: EventRepeatType,
+    type: 'varchar',
+    length: 20,
     default: EventRepeatType.NONE,
   })
   repeatType: EventRepeatType;
