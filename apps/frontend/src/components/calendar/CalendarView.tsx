@@ -18,7 +18,9 @@ import { ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
 import { Event } from "@/lib/events";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useEvents } from "@/hooks/useEvents";
+import { useTeams } from "@/hooks/useTeams";
 import { CalendarCreateModal } from "./CalendarCreateModal";
+import { EventCreateModal } from "../event/EventCreateModal";
 
 interface CalendarViewProps {
   onEventClick?: (event: Event) => void;
@@ -31,6 +33,9 @@ export function CalendarView({
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEventCreateModal, setShowEventCreateModal] = useState(false);
+  const [selectedCalendarType, setSelectedCalendarType] =
+    useState<string>("personal");
 
   const monthStart = useMemo(() => startOfMonth(currentDate), [currentDate]);
   const monthEnd = useMemo(() => endOfMonth(currentDate), [currentDate]);
@@ -59,10 +64,40 @@ export function CalendarView({
     createCalendar,
   } = useCalendar();
 
+  const { teams } = useTeams();
+
+  // 선택된 타입에 따른 캘린더 필터링
+  const filteredCalendars = useMemo(() => {
+    if (selectedCalendarType === "personal") {
+      return calendars.filter((cal) => cal.type === "personal");
+    } else {
+      // 팀 ID로 필터링
+      return calendars.filter((cal) => cal.team?.id === selectedCalendarType);
+    }
+  }, [calendars, selectedCalendarType]);
+
+  // 드롭다운 옵션 생성
+  const dropdownOptions = useMemo(() => {
+    const options = [
+      { value: "personal", label: "개인", type: "personal" as const },
+    ];
+
+    teams.forEach((team) => {
+      options.push({
+        value: team.id,
+        label: team.name,
+        type: "team" as const,
+      });
+    });
+
+    return options;
+  }, [teams]);
+
   const {
     events,
     isLoading: eventsLoading,
     getEventsForDate,
+    refetch: refetchEvents,
   } = useEvents(monthStart, monthEnd, selectedCalendars);
 
   const isLoading = calendarsLoading || eventsLoading;
@@ -80,10 +115,10 @@ export function CalendarView({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* 캘린더 헤더 */}
       <div className="bg-white border-b border-gray-200">
-        <div className="flex items-center justify-between p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 space-y-4 sm:space-y-0">
           {/* 월 표시 및 네비게이션 */}
           <div className="flex items-center space-x-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h2 className="text-lg sm:text-2xl font-semibold text-gray-900">
               {format(currentDate, "yyyy년 M월", { locale: ko })}
             </h2>
             <div className="flex items-center space-x-1">
@@ -102,22 +137,40 @@ export function CalendarView({
             </div>
           </div>
 
-          {/* 액션 버튼들 */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center space-x-2 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            >
-              <CalendarPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">캘린더 추가</span>
-            </button>
-            <button
-              onClick={onCreateEvent}
-              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">일정 추가</span>
-            </button>
+          {/* 캘린더 타입 선택 및 액션 버튼들 */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+            {/* 캘린더 타입 선택 */}
+            <div className="flex items-center space-x-2">
+              <select
+                value={selectedCalendarType}
+                onChange={(e) => setSelectedCalendarType(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200"
+              >
+                {dropdownOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 액션 버튼들 */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center space-x-2 bg-slate-600 hover:bg-slate-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                <CalendarPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">캘린더 추가</span>
+              </button>
+              <button
+                onClick={() => setShowEventCreateModal(true)}
+                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">일정 추가</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -125,7 +178,7 @@ export function CalendarView({
       {/* 캘린더 필터 */}
       <div className="p-4 sm:p-6 bg-gray-50/50 border-b border-gray-100">
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          {calendars.map((cal) => (
+          {filteredCalendars.map((cal) => (
             <label
               key={cal.id}
               className={`inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 ${
@@ -140,9 +193,6 @@ export function CalendarView({
                 color: selectedCalendars.includes(cal.id)
                   ? cal.color
                   : "#6B7280",
-                ringColor: selectedCalendars.includes(cal.id)
-                  ? cal.color
-                  : undefined,
               }}
             >
               <input
@@ -205,20 +255,33 @@ export function CalendarView({
                 {format(day, "d")}
               </time>
               <div className="space-y-0.5 sm:space-y-1">
-                {dayEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => onEventClick?.(event)}
-                    className="text-xs truncate rounded-lg px-1.5 sm:px-2 py-1 sm:py-1.5 cursor-pointer hover:shadow-sm transition-all duration-150 hover:scale-105"
-                    style={{
-                      backgroundColor: `${event.calendar.color}15`,
-                      color: event.calendar.color,
-                      borderLeft: `2px solid ${event.calendar.color}`,
-                    }}
-                  >
-                    {event.title}
+                {dayEvents.length > 0 ? (
+                  <>
+                    {dayEvents.slice(0, 3).map((event) => (
+                      <div
+                        key={event.id}
+                        onClick={() => onEventClick?.(event)}
+                        className="text-xs truncate rounded-lg px-1.5 sm:px-2 py-1 sm:py-1.5 cursor-pointer hover:shadow-sm transition-all duration-150 hover:scale-105"
+                        style={{
+                          backgroundColor: `${event.calendar.color}15`,
+                          color: event.calendar.color,
+                          borderLeft: `2px solid ${event.calendar.color}`,
+                        }}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <div className="text-xs text-gray-500 text-center py-1">
+                        +{dayEvents.length - 3}개 더
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-xs text-gray-300 text-center py-1">
+                    일정 없음
                   </div>
-                ))}
+                )}
               </div>
             </div>
           );
@@ -230,6 +293,19 @@ export function CalendarView({
         <CalendarCreateModal
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {/* 일정 생성 모달 */}
+      {showEventCreateModal && (
+        <EventCreateModal
+          onClose={() => setShowEventCreateModal(false)}
+          onSuccess={() => {
+            setShowEventCreateModal(false);
+            // 이벤트 목록 새로고침
+            refetchEvents();
+          }}
+          selectedCalendarType={selectedCalendarType}
         />
       )}
     </div>

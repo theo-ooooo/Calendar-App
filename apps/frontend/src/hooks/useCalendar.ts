@@ -22,11 +22,13 @@ export function useCalendar() {
     try {
       setIsLoading(true);
       setError(null);
-      const calendarsData = await calendarsApi.getCalendars();
+
+      // 백엔드에서 개인 + 팀 캘린더를 모두 가져오기
+      const allCalendars = await calendarsApi.getCalendars();
 
       startTransition(() => {
-        setCalendars(calendarsData);
-        setSelectedCalendars(calendarsData.map((cal) => cal.id));
+        setCalendars(allCalendars);
+        setSelectedCalendars(allCalendars.map((cal) => cal.id));
       });
     } catch (err) {
       setError("캘린더를 불러오는데 실패했습니다.");
