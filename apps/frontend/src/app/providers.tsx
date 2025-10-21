@@ -15,10 +15,8 @@ function AuthInitializer() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // 한 번만 초기화 실행
-    if (isLoading) {
-      initialize();
-    }
+    // 앱 시작 시 한 번만 초기화 실행
+    initialize();
   }, []); // 빈 의존성 배열로 한 번만 실행
 
   // 로딩 중이면 로딩 화면 표시
