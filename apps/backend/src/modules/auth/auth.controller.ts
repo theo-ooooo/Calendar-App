@@ -7,7 +7,9 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  Res,
 } from "@nestjs/common";
+import { Response } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -33,8 +35,28 @@ export class AuthController {
   @ApiOperation({ summary: "회원가입" })
   @ApiResponse({ status: 201, description: "회원가입 성공" })
   @ApiResponse({ status: 409, description: "이미 사용 중인 이메일" })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.authService.register(registerDto);
+
+    // 쿠키 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    return { user: result.user, message: "회원가입이 완료되었습니다." };
   }
 
   @Post("login")
@@ -42,11 +64,36 @@ export class AuthController {
   @ApiOperation({ summary: "로그인" })
   @ApiResponse({ status: 200, description: "로그인 성공" })
   @ApiResponse({ status: 401, description: "인증 실패" })
-  async login(@Body() loginDto: LoginDto, @Request() req) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Request() req,
+    @Res({ passthrough: true }) res: Response
+  ) {
     const deviceInfo = req.headers["user-agent"];
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    return this.authService.login(loginDto, deviceInfo, ipAddress);
+    const result = await this.authService.login(
+      loginDto,
+      deviceInfo,
+      ipAddress
+    );
+
+    // 쿠키 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    return { user: result.user, message: "로그인되었습니다." };
   }
 
   @Post("refresh")
@@ -54,16 +101,51 @@ export class AuthController {
   @ApiOperation({ summary: "토큰 갱신" })
   @ApiResponse({ status: 200, description: "토큰 갱신 성공" })
   @ApiResponse({ status: 401, description: "유효하지 않은 리프레시 토큰" })
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshAccessToken(refreshTokenDto.refreshToken);
+  async refreshToken(
+    @Request() req,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      throw new Error("Refresh token not found");
+    }
+
+    const result = await this.authService.refreshAccessToken(refreshToken);
+
+    // 새로운 토큰을 쿠키에 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    return { message: "토큰이 갱신되었습니다." };
   }
 
   @Post("logout")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "로그아웃" })
   @ApiResponse({ status: 200, description: "로그아웃 성공" })
-  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
-    await this.authService.logout(refreshTokenDto.refreshToken);
+  async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+
+    // 쿠키 삭제
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
     return { message: "로그아웃되었습니다." };
   }
 
