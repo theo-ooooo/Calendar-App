@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      isLoading: true, // 초기 로딩 상태로 변경
+      isLoading: false, // 초기 상태를 false로 변경
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
@@ -98,18 +98,18 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         const state = get();
-        // 이미 초기화 중이거나 완료된 경우 중복 호출 방지
+        // 이미 완료된 경우 중복 호출 방지
         if (state.isLoading === false && state.user !== null) {
           return;
         }
-        
+
         // 이미 초기화 중인 경우 중복 호출 방지
         if (state.isLoading === true) {
           return;
         }
-        
+
         set({ isLoading: true });
-        
+
         try {
           const userData = await authApi.getProfile();
           set({
