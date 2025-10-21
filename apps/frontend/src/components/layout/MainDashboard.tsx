@@ -23,14 +23,6 @@ export function MainDashboard() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   // 인증 상태 확인
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <SuspenseFallback message="인증 상태를 확인하는 중..." />
-      </div>
-    );
-  }
-
   if (!isAuthenticated || !user) {
     router.push("/login");
     return null;
