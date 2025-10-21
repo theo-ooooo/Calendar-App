@@ -42,10 +42,29 @@ class ApiClient {
           if (refreshResponse.ok) {
             // Retry original request
             return this.request<T>(endpoint, options, true);
+          } else {
+            // Refresh failed, clear tokens and redirect to login
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+              } catch (e) {
+                // localStorage might not be available
+              }
+              window.location.href = "/login";
+            }
+            throw new Error("Token refresh failed");
           }
         } catch (refreshError) {
-          // Refresh failed, redirect to login
-          if (typeof window !== 'undefined') {
+          // Refresh failed, clear tokens and redirect to login
+          if (typeof window !== "undefined") {
+            // Clear any stored tokens (if any) - only on client side
+            try {
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+            } catch (e) {
+              // localStorage might not be available
+            }
             window.location.href = "/login";
           }
           throw refreshError;
