@@ -22,6 +22,9 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // 글로벌 prefix 설정
+  app.setGlobalPrefix("api");
+
   // 전역 파이프 설정
   app.useGlobalPipes(
     new ValidationPipe({
