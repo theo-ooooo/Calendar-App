@@ -33,10 +33,12 @@ export function useEvents(
     try {
       setIsLoading(true);
       setError(null);
+      console.log("이벤트 로드 시작:", { startDateString, endDateString });
       const eventsData = await eventsApi.getEventsByDateRange(
         startDateString,
         endDateString
       );
+      console.log("이벤트 데이터:", eventsData);
 
       startTransition(() => {
         setEvents(eventsData);
@@ -51,13 +53,27 @@ export function useEvents(
 
   const getEventsForDate = useCallback(
     (date: Date) => {
-      return events.filter((event) => {
+      const filteredEvents = events.filter((event) => {
         const eventDate = new Date(event.startDate);
-        return (
-          isSameDay(eventDate, date) &&
-          deferredSelectedCalendars.includes(event.calendar.id)
-        );
+        const isSameDayMatch = isSameDay(eventDate, date);
+        const isCalendarSelected = deferredSelectedCalendars.length === 0 || 
+          deferredSelectedCalendars.includes(event.calendar.id);
+        
+        console.log("이벤트 필터링:", {
+          eventTitle: event.title,
+          eventDate: event.startDate,
+          checkDate: format(date, "yyyy-MM-dd"),
+          isSameDayMatch,
+          isCalendarSelected,
+          selectedCalendars: deferredSelectedCalendars,
+          eventCalendarId: event.calendar.id
+        });
+        
+        return isSameDayMatch && isCalendarSelected;
       });
+      
+      console.log(`${format(date, "yyyy-MM-dd")} 일정:`, filteredEvents);
+      return filteredEvents;
     },
     [events, deferredSelectedCalendars]
   );
@@ -65,6 +81,7 @@ export function useEvents(
   // 메모이제이션된 필터링된 이벤트
   const filteredEvents = useMemo(() => {
     return events.filter((event) =>
+      deferredSelectedCalendars.length === 0 || 
       deferredSelectedCalendars.includes(event.calendar.id)
     );
   }, [events, deferredSelectedCalendars]);
