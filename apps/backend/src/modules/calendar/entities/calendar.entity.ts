@@ -7,21 +7,21 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
-} from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { Team } from '../../team/entities/team.entity';
-import { Event } from '../../event/entities/event.entity';
+} from "typeorm";
+import { User } from "../../user/entities/user.entity";
+import { Team } from "../../team/entities/team.entity";
+import { Event } from "../../event/entities/event.entity";
 
 export const CalendarType = {
-  PERSONAL: 'personal',
-  TEAM: 'team',
+  PERSONAL: "personal",
+  TEAM: "team",
 } as const;
 
 export type CalendarType = (typeof CalendarType)[keyof typeof CalendarType];
 
-@Entity('calendars')
+@Entity("calendars")
 export class Calendar {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -34,7 +34,7 @@ export class Calendar {
   color: string;
 
   @Column({
-    type: 'varchar',
+    type: "varchar",
     length: 20,
     default: CalendarType.PERSONAL,
   })
@@ -57,14 +57,14 @@ export class Calendar {
   ownerId: string;
 
   @ManyToOne(() => User, (user) => user.calendars)
-  @JoinColumn({ name: 'ownerId' })
+  @JoinColumn({ name: "ownerId" })
   owner: User;
 
   @Column({ nullable: true })
   teamId?: string;
 
   @ManyToOne(() => Team, (team) => team.calendars)
-  @JoinColumn({ name: 'teamId' })
+  @JoinColumn({ name: "teamId" })
   team?: Team;
 
   @OneToMany(() => Event, (event) => event.calendar)

@@ -8,31 +8,32 @@ import {
   ManyToMany,
   JoinColumn,
   JoinTable,
-} from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { Calendar } from '../../calendar/entities/calendar.entity';
+} from "typeorm";
+import { User } from "../../user/entities/user.entity";
+import { Calendar } from "../../calendar/entities/calendar.entity";
 
 export const EventStatus = {
-  TENTATIVE: 'tentative',
-  CONFIRMED: 'confirmed',
-  CANCELLED: 'cancelled',
+  TENTATIVE: "tentative",
+  CONFIRMED: "confirmed",
+  CANCELLED: "cancelled",
 } as const;
 
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
 
 export const EventRepeatType = {
-  NONE: 'none',
-  DAILY: 'daily',
-  WEEKLY: 'weekly',
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly',
+  NONE: "none",
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+  YEARLY: "yearly",
 } as const;
 
-export type EventRepeatType = (typeof EventRepeatType)[keyof typeof EventRepeatType];
+export type EventRepeatType =
+  (typeof EventRepeatType)[keyof typeof EventRepeatType];
 
-@Entity('events')
+@Entity("events")
 export class Event {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -41,17 +42,17 @@ export class Event {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: "datetime" })
   startDate: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: "datetime" })
   endDate: Date;
 
   @Column({ nullable: true })
   location?: string;
 
   @Column({
-    type: 'varchar',
+    type: "varchar",
     length: 20,
     default: EventStatus.CONFIRMED,
   })
@@ -64,7 +65,7 @@ export class Event {
   reminder?: number; // 분 단위
 
   @Column({
-    type: 'varchar',
+    type: "varchar",
     length: 20,
     default: EventRepeatType.NONE,
   })
@@ -87,14 +88,14 @@ export class Event {
   creatorId: string;
 
   @ManyToOne(() => User, (user) => user.createdEvents)
-  @JoinColumn({ name: 'creatorId' })
+  @JoinColumn({ name: "creatorId" })
   creator: User;
 
   @Column()
   calendarId: string;
 
   @ManyToOne(() => Calendar, (calendar) => calendar.events)
-  @JoinColumn({ name: 'calendarId' })
+  @JoinColumn({ name: "calendarId" })
   calendar: Calendar;
 
   @ManyToMany(() => User, (user) => user.attendingEvents)
