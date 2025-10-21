@@ -7,14 +7,14 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
-} from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { TeamMember } from './team-member.entity';
-import { Calendar } from '../../calendar/entities/calendar.entity';
+} from "typeorm";
+import { User } from "../../user/entities/user.entity";
+import { TeamMember } from "./team-member.entity";
+import { Calendar } from "../../calendar/entities/calendar.entity";
 
-@Entity('teams')
+@Entity("teams")
 export class Team {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -46,7 +46,7 @@ export class Team {
   ownerId: string;
 
   @ManyToOne(() => User, (user) => user.ownedTeams)
-  @JoinColumn({ name: 'ownerId' })
+  @JoinColumn({ name: "ownerId" })
   owner: User;
 
   @OneToMany(() => TeamMember, (member) => member.team, { cascade: true })
