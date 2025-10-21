@@ -1,19 +1,18 @@
 "use client";
 
-import { Suspense } from "react";
 import { useTeams } from "@/hooks/useTeams";
-import { SuspenseFallback } from "./SuspenseFallback";
+import { SuspenseFallback } from "../ui";
 import { Plus, Users, Settings, Trash2, UserPlus } from "lucide-react";
 
 export function TeamManagement() {
-  const { 
-    teams, 
-    isLoading, 
-    error, 
-    createTeam, 
-    deleteTeam, 
-    joinTeam, 
-    inviteMember 
+  const {
+    teams,
+    isLoading,
+    error,
+    createTeam,
+    deleteTeam,
+    joinTeam,
+    inviteMember,
   } = useTeams();
 
   const handleCreateTeam = async () => {
@@ -101,8 +100,12 @@ export function TeamManagement() {
         {teams.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">아직 팀이 없습니다</h3>
-            <p className="text-gray-500 mb-4">새 팀을 생성하거나 초대 코드로 팀에 참여해보세요.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              아직 팀이 없습니다
+            </h3>
+            <p className="text-gray-500 mb-4">
+              새 팀을 생성하거나 초대 코드로 팀에 참여해보세요.
+            </p>
             <button
               onClick={handleCreateTeam}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -111,13 +114,17 @@ export function TeamManagement() {
             </button>
           </div>
         ) : (
-          teams.map(team => (
+          teams.map((team) => (
             <div key={team.id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {team.name}
+                  </h3>
                   {team.description && (
-                    <p className="text-sm text-gray-600 mt-1">{team.description}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {team.description}
+                    </p>
                   )}
                 </div>
                 <div className="flex space-x-2">

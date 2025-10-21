@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { authApi } from "@/lib/auth";
 import { User, Mail, Calendar, Settings, LogOut } from "lucide-react";
 
 export function UserProfile() {
@@ -12,10 +13,18 @@ export function UserProfile() {
     email: user?.email || "",
   });
 
-  const handleSave = () => {
-    // TODO: 프로필 업데이트 API 호출
-    console.log("프로필 저장:", profileData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const updatedUser = await authApi.updateProfile({
+        name: profileData.name,
+      });
+      // 스토어 업데이트
+      useAuthStore.getState().setUser(updatedUser);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("프로필 업데이트 실패:", error);
+      alert("프로필 업데이트에 실패했습니다.");
+    }
   };
 
   const handleCancel = () => {
@@ -24,6 +33,19 @@ export function UserProfile() {
       email: user?.email || "",
     });
     setIsEditing(false);
+  };
+
+  const handleDeactivate = async () => {
+    if (confirm("정말로 계정을 비활성화하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      try {
+        await authApi.deactivateAccount();
+        logout();
+        alert("계정이 비활성화되었습니다.");
+      } catch (error) {
+        console.error("계정 비활성화 실패:", error);
+        alert("계정 비활성화에 실패했습니다.");
+      }
+    }
   };
 
   if (!user) return null;
@@ -152,8 +174,11 @@ export function UserProfile() {
                 <p className="text-sm font-medium text-red-900">계정 삭제</p>
                 <p className="text-sm text-red-700">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
               </div>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
-                계정 삭제
+              <button 
+                onClick={handleDeactivate}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+              >
+                계정 비활성화
               </button>
             </div>
           </div>

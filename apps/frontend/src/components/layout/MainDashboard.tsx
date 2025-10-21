@@ -9,6 +9,7 @@ import { EventModal } from "../event";
 import { UserProfile } from "./UserProfile";
 import { Header } from "./Header";
 import { Navigation } from "./Navigation";
+import { SuspenseFallback } from "../ui";
 
 type TabType = "calendar" | "teams" | "profile";
 

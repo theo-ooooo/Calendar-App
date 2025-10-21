@@ -1,8 +1,19 @@
-import { useState, useEffect, useCallback, useMemo, useTransition, useDeferredValue } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useTransition,
+  useDeferredValue,
+} from "react";
 import { format, isSameDay } from "date-fns";
 import { eventsApi, Event } from "@/lib/events";
 
-export function useEvents(startDate: Date, endDate: Date, selectedCalendars: string[]) {
+export function useEvents(
+  startDate: Date,
+  endDate: Date,
+  selectedCalendars: string[]
+) {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +30,7 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
         format(startDate, "yyyy-MM-dd"),
         format(endDate, "yyyy-MM-dd")
       );
-      
+
       startTransition(() => {
         setEvents(eventsData);
       });
@@ -31,17 +42,22 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
     }
   }, [startDate, endDate]);
 
-  const getEventsForDate = useCallback((date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.startDate);
-      return isSameDay(eventDate, date) && 
-             deferredSelectedCalendars.includes(event.calendar.id);
-    });
-  }, [events, deferredSelectedCalendars]);
+  const getEventsForDate = useCallback(
+    (date: Date) => {
+      return events.filter((event) => {
+        const eventDate = new Date(event.startDate);
+        return (
+          isSameDay(eventDate, date) &&
+          deferredSelectedCalendars.includes(event.calendar.id)
+        );
+      });
+    },
+    [events, deferredSelectedCalendars]
+  );
 
   // 메모이제이션된 필터링된 이벤트
   const filteredEvents = useMemo(() => {
-    return events.filter(event => 
+    return events.filter((event) =>
       deferredSelectedCalendars.includes(event.calendar.id)
     );
   }, [events, deferredSelectedCalendars]);
@@ -49,7 +65,7 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
   const createEvent = async (eventData: any) => {
     try {
       const newEvent = await eventsApi.createEvent(eventData);
-      setEvents(prev => [...prev, newEvent]);
+      setEvents((prev) => [...prev, newEvent]);
       return newEvent;
     } catch (err) {
       setError("이벤트 생성에 실패했습니다.");
@@ -60,9 +76,9 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
   const updateEvent = async (eventId: string, eventData: any) => {
     try {
       const updatedEvent = await eventsApi.updateEvent(eventId, eventData);
-      setEvents(prev => prev.map(event => 
-        event.id === eventId ? updatedEvent : event
-      ));
+      setEvents((prev) =>
+        prev.map((event) => (event.id === eventId ? updatedEvent : event))
+      );
       return updatedEvent;
     } catch (err) {
       setError("이벤트 수정에 실패했습니다.");
@@ -73,7 +89,7 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
   const deleteEvent = async (eventId: string) => {
     try {
       await eventsApi.deleteEvent(eventId);
-      setEvents(prev => prev.filter(event => event.id !== eventId));
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
     } catch (err) {
       setError("이벤트 삭제에 실패했습니다.");
       throw err;
@@ -82,7 +98,7 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
 
   useEffect(() => {
     loadEvents();
-  }, [startDate, endDate]);
+  }, [loadEvents]);
 
   return {
     events,
@@ -92,6 +108,6 @@ export function useEvents(startDate: Date, endDate: Date, selectedCalendars: str
     createEvent,
     updateEvent,
     deleteEvent,
-    refetch: loadEvents
+    refetch: loadEvents,
   };
 }

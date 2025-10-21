@@ -81,4 +81,18 @@ export const authApi = {
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
     }/auth/${provider}`;
   },
+
+  // 프로필 수정
+  updateProfile: async (data: { name?: string; profileImage?: string }): Promise<User> => {
+    const response = await api.put<{ status: boolean; data: User }>(
+      "/users/profile",
+      data
+    );
+    return response.data;
+  },
+
+  // 계정 비활성화
+  deactivateAccount: async (): Promise<void> => {
+    await api.put("/users/deactivate");
+  },
 };

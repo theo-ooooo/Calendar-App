@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, useMemo, useTransition, useDeferredValue } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useTransition,
+  useDeferredValue,
+} from "react";
 import { calendarsApi, Calendar } from "@/lib/calendars";
 
 export function useCalendar() {
@@ -16,10 +23,10 @@ export function useCalendar() {
       setIsLoading(true);
       setError(null);
       const calendarsData = await calendarsApi.getCalendars();
-      
+
       startTransition(() => {
         setCalendars(calendarsData);
-        setSelectedCalendars(calendarsData.map(cal => cal.id));
+        setSelectedCalendars(calendarsData.map((cal) => cal.id));
       });
     } catch (err) {
       setError("캘린더를 불러오는데 실패했습니다.");
@@ -29,17 +36,30 @@ export function useCalendar() {
     }
   }, []);
 
+  const createCalendar = useCallback(async (data: any) => {
+    try {
+      const newCalendar = await calendarsApi.createCalendar(data);
+      setCalendars((prev) => [...prev, newCalendar]);
+      return newCalendar;
+    } catch (err) {
+      setError("캘린더 생성에 실패했습니다.");
+      throw err;
+    }
+  }, []);
+
   const toggleCalendar = useCallback((calendarId: string) => {
-    setSelectedCalendars(prev => 
-      prev.includes(calendarId) 
-        ? prev.filter(id => id !== calendarId)
+    setSelectedCalendars((prev) =>
+      prev.includes(calendarId)
+        ? prev.filter((id) => id !== calendarId)
         : [...prev, calendarId]
     );
   }, []);
 
   // 메모이제이션된 필터링된 캘린더
   const filteredCalendars = useMemo(() => {
-    return calendars.filter(cal => deferredSelectedCalendars.includes(cal.id));
+    return calendars.filter((cal) =>
+      deferredSelectedCalendars.includes(cal.id)
+    );
   }, [calendars, deferredSelectedCalendars]);
 
   // 메모이제이션된 선택된 캘린더 개수
@@ -60,6 +80,7 @@ export function useCalendar() {
     isPending,
     error,
     toggleCalendar,
-    refetch: loadCalendars
+    createCalendar,
+    refetch: loadCalendars,
   };
 }
