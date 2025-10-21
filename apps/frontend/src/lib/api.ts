@@ -15,16 +15,14 @@ class ApiClient {
     isRetry = false
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    const token = localStorage.getItem("accessToken");
 
     const config: RequestInit = {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      credentials: "include",
+      credentials: "include", // 쿠키 자동 전송
     };
 
     try {
@@ -32,44 +30,23 @@ class ApiClient {
 
       // Handle 401 Unauthorized with token refresh
       if (response.status === 401 && !isRetry) {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          try {
-            const refreshResponse = await fetch(
-              `${this.baseURL}/auth/refresh`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ refreshToken }),
-              }
-            );
+        try {
+          const refreshResponse = await fetch(`${this.baseURL}/auth/refresh`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include", // 쿠키로 refresh token 전송
+          });
 
-            if (refreshResponse.ok) {
-              const refreshData = await refreshResponse.json();
-              const { accessToken, refreshToken: newRefreshToken } =
-                refreshData.data;
-
-              localStorage.setItem("accessToken", accessToken);
-              localStorage.setItem("refreshToken", newRefreshToken);
-
-              // Retry original request with new token
-              return this.request<T>(endpoint, options, true);
-            }
-          } catch (refreshError) {
-            // Refresh failed, redirect to login
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            window.location.href = "/login";
-            throw refreshError;
+          if (refreshResponse.ok) {
+            // Retry original request
+            return this.request<T>(endpoint, options, true);
           }
-        } else {
-          // No refresh token, redirect to login
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+        } catch (refreshError) {
+          // Refresh failed, redirect to login
           window.location.href = "/login";
+          throw refreshError;
         }
       }
 

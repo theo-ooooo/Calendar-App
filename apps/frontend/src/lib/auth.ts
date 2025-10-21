@@ -14,8 +14,6 @@ export interface User {
 
 export interface AuthResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
 }
 
 export interface LoginCredentials {
@@ -57,17 +55,16 @@ export const authApi = {
   },
 
   // 토큰 갱신
-  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
+  refreshToken: async (): Promise<AuthResponse> => {
     const response = await api.post<{ status: boolean; data: AuthResponse }>(
-      "/auth/refresh",
-      { refreshToken }
+      "/auth/refresh"
     );
     return response.data;
   },
 
   // 로그아웃
-  logout: async (refreshToken: string): Promise<void> => {
-    await api.post("/auth/logout", { refreshToken });
+  logout: async (): Promise<void> => {
+    await api.post("/auth/logout");
   },
 
   // 모든 기기 로그아웃
@@ -83,7 +80,10 @@ export const authApi = {
   },
 
   // 프로필 수정
-  updateProfile: async (data: { name?: string; profileImage?: string }): Promise<User> => {
+  updateProfile: async (data: {
+    name?: string;
+    profileImage?: string;
+  }): Promise<User> => {
     const response = await api.put<{ status: boolean; data: User }>(
       "/users/profile",
       data
