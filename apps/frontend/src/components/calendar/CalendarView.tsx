@@ -12,6 +12,8 @@ import {
   isSameDay,
   addMonths,
   subMonths,
+  getYear,
+  getMonth,
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
@@ -26,6 +28,60 @@ interface CalendarViewProps {
   onEventClick?: (event: Event) => void;
   onCreateEvent?: () => void;
 }
+
+// 한국 공휴일 데이터 (2024-2025)
+const HOLIDAYS = {
+  2024: [
+    { month: 1, day: 1, name: "신정" },
+    { month: 2, day: 9, name: "설날연휴" },
+    { month: 2, day: 10, name: "설날" },
+    { month: 2, day: 11, name: "설날연휴" },
+    { month: 2, day: 12, name: "대체휴일" },
+    { month: 3, day: 1, name: "삼일절" },
+    { month: 4, day: 10, name: "국회의원선거" },
+    { month: 5, day: 5, name: "어린이날" },
+    { month: 5, day: 6, name: "대체휴일" },
+    { month: 5, day: 15, name: "부처님오신날" },
+    { month: 6, day: 6, name: "현충일" },
+    { month: 8, day: 15, name: "광복절" },
+    { month: 9, day: 16, name: "추석연휴" },
+    { month: 9, day: 17, name: "추석" },
+    { month: 9, day: 18, name: "추석연휴" },
+    { month: 10, day: 3, name: "개천절" },
+    { month: 10, day: 9, name: "한글날" },
+    { month: 12, day: 25, name: "성탄절" },
+  ],
+  2025: [
+    { month: 1, day: 1, name: "신정" },
+    { month: 1, day: 28, name: "설날연휴" },
+    { month: 1, day: 29, name: "설날" },
+    { month: 1, day: 30, name: "설날연휴" },
+    { month: 3, day: 1, name: "삼일절" },
+    { month: 5, day: 5, name: "어린이날" },
+    { month: 5, day: 12, name: "부처님오신날" },
+    { month: 6, day: 6, name: "현충일" },
+    { month: 8, day: 15, name: "광복절" },
+    { month: 9, day: 6, name: "추석연휴" },
+    { month: 9, day: 7, name: "추석" },
+    { month: 9, day: 8, name: "추석연휴" },
+    { month: 10, day: 3, name: "개천절" },
+    { month: 10, day: 9, name: "한글날" },
+    { month: 12, day: 25, name: "성탄절" },
+  ],
+};
+
+// 빨간날(공휴일) 체크 함수
+const isHoliday = (date: Date): { isHoliday: boolean; name?: string } => {
+  const year = getYear(date);
+  const month = getMonth(date) + 1; // getMonth는 0부터 시작
+  const day = date.getDate();
+  
+  const yearHolidays = HOLIDAYS[year as keyof typeof HOLIDAYS];
+  if (!yearHolidays) return { isHoliday: false };
+  
+  const holiday = yearHolidays.find(h => h.month === month && h.day === day);
+  return holiday ? { isHoliday: true, name: holiday.name } : { isHoliday: false };
+};
 
 export function CalendarView({
   onEventClick,
@@ -234,23 +290,27 @@ export function CalendarView({
           const dayEvents = getEventsForDate(day);
           const isToday = isSameDay(day, new Date());
           const isCurrentMonth = isSameMonth(day, currentDate);
+          const holidayInfo = isHoliday(day);
 
           return (
             <div
               key={index}
               className={`min-h-[80px] sm:min-h-[120px] p-2 sm:p-3 bg-white hover:bg-gray-50/50 transition-colors duration-150 ${
                 !isCurrentMonth ? "text-gray-300 bg-gray-50/30" : ""
-              } ${isToday ? "bg-blue-50/50" : ""}`}
+              } ${isToday ? "bg-blue-50/50" : ""} ${holidayInfo.isHoliday ? "bg-red-50/30" : ""}`}
             >
               <time
                 dateTime={format(day, "yyyy-MM-dd")}
                 className={`block text-right text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
                   isToday
                     ? "text-white bg-blue-500 rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center mx-auto text-xs sm:text-sm"
+                    : holidayInfo.isHoliday
+                    ? "text-red-600 font-bold"
                     : isCurrentMonth
                     ? "text-gray-800"
                     : "text-gray-400"
                 }`}
+                title={holidayInfo.isHoliday ? holidayInfo.name : undefined}
               >
                 {format(day, "d")}
               </time>
