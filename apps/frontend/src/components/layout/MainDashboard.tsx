@@ -61,10 +61,10 @@ export function MainDashboard() {
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* 메인 컨텐츠 */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
+      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="w-full">
           {isPending && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                 <span className="text-sm text-blue-700">로딩 중...</span>
