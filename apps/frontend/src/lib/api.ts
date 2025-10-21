@@ -31,9 +31,14 @@ class ApiClient {
 
       // Handle 401 Unauthorized with token refresh
       if (response.status === 401 && !isRetry && !this.isRefreshing) {
+        // refresh API 자체는 refresh를 시도하지 않음
+        if (endpoint === "/auth/refresh") {
+          throw new Error("Refresh token expired");
+        }
+        
         this.isRefreshing = true;
         try {
-          // refresh API 호출 (무한 루프 방지를 위해 isRetry 체크 없이)
+          // refresh API 호출
           const refreshResponse = await fetch(`${this.baseURL}/auth/refresh`, {
             method: "POST",
             headers: {

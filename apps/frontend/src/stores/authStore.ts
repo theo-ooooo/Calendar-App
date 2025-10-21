@@ -103,6 +103,11 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
         
+        // 이미 초기화 중인 경우 중복 호출 방지
+        if (state.isLoading === true) {
+          return;
+        }
+        
         set({ isLoading: true });
         
         try {
