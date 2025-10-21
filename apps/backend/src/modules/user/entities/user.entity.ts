@@ -14,17 +14,21 @@ import { TeamMember } from '../../team/entities/team-member.entity';
 import { Calendar } from '../../calendar/entities/calendar.entity';
 import { Event } from '../../event/entities/event.entity';
 
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-}
+export const UserRole = {
+  USER: 'user',
+  ADMIN: 'admin',
+} as const;
 
-export enum AuthProvider {
-  LOCAL = 'local',
-  GOOGLE = 'google',
-  KAKAO = 'kakao',
-  NAVER = 'naver',
-}
+export type UserRole = typeof UserRole[keyof typeof UserRole];
+
+export const AuthProvider = {
+  LOCAL: 'local',
+  GOOGLE: 'google',
+  KAKAO: 'kakao',
+  NAVER: 'naver',
+} as const;
+
+export type AuthProvider = typeof AuthProvider[keyof typeof AuthProvider];
 
 @Entity('users')
 export class User {
