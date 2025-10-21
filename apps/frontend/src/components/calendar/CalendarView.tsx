@@ -88,14 +88,14 @@ export function CalendarView({
         <div className="flex space-x-3">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"
+            className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"
           >
             <CalendarPlus className="w-4 h-4" />
             <span>캘린더 추가</span>
           </button>
           <button
             onClick={onCreateEvent}
-            className="flex items-center space-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"
+            className="flex items-center space-x-2 bg-slate-600 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"
           >
             <Plus className="w-4 h-4" />
             <span>일정 추가</span>
@@ -121,7 +121,9 @@ export function CalendarView({
                 color: selectedCalendars.includes(cal.id)
                   ? cal.color
                   : "#6B7280",
-                ringColor: selectedCalendars.includes(cal.id) ? cal.color : undefined,
+                ringColor: selectedCalendars.includes(cal.id)
+                  ? cal.color
+                  : undefined,
               }}
             >
               <input
@@ -132,10 +134,14 @@ export function CalendarView({
               />
               <div
                 className={`w-3 h-3 rounded-full mr-3 border-2 ${
-                  selectedCalendars.includes(cal.id) ? "border-current" : "border-gray-300"
+                  selectedCalendars.includes(cal.id)
+                    ? "border-current"
+                    : "border-gray-300"
                 }`}
                 style={{
-                  backgroundColor: selectedCalendars.includes(cal.id) ? cal.color : "transparent",
+                  backgroundColor: selectedCalendars.includes(cal.id)
+                    ? cal.color
+                    : "transparent",
                 }}
               />
               <span>{cal.name}</span>
@@ -157,7 +163,7 @@ export function CalendarView({
           const dayEvents = getEventsForDate(day);
           const isToday = isSameDay(day, new Date());
           const isCurrentMonth = isSameMonth(day, currentDate);
-          
+
           return (
             <div
               key={index}
@@ -168,10 +174,10 @@ export function CalendarView({
               <time
                 dateTime={format(day, "yyyy-MM-dd")}
                 className={`block text-right text-sm font-medium mb-2 ${
-                  isToday 
-                    ? "text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center mx-auto" 
-                    : isCurrentMonth 
-                    ? "text-gray-800" 
+                  isToday
+                    ? "text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center mx-auto"
+                    : isCurrentMonth
+                    ? "text-gray-800"
                     : "text-gray-400"
                 }`}
               >

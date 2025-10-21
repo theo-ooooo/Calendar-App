@@ -10,19 +10,22 @@ interface CalendarCreateModalProps {
 }
 
 const CALENDAR_COLORS = [
+  "#6B7280", // gray
+  "#374151", // dark gray
+  "#4B5563", // slate
+  "#1F2937", // dark slate
   "#3B82F6", // blue
-  "#EF4444", // red
-  "#10B981", // green
-  "#F59E0B", // yellow
-  "#8B5CF6", // purple
-  "#EC4899", // pink
-  "#06B6D4", // cyan
-  "#84CC16", // lime
-  "#F97316", // orange
-  "#6366F1", // indigo
+  "#1E40AF", // dark blue
+  "#059669", // emerald
+  "#047857", // dark emerald
+  "#7C3AED", // violet
+  "#5B21B6", // dark violet
 ];
 
-export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalProps) {
+export function CalendarCreateModal({
+  onClose,
+  onSuccess,
+}: CalendarCreateModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -33,7 +36,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await createCalendar(formData);
       onSuccess();
@@ -44,11 +47,14 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -56,9 +62,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-900">
-            새 캘린더 만들기
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900">새 캘린더 만들기</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
@@ -78,7 +82,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400"
               placeholder="예: 개인 일정, 팀 프로젝트"
             />
           </div>
@@ -92,7 +96,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 resize-none"
               placeholder="캘린더에 대한 설명을 입력하세요"
             />
           </div>
@@ -107,13 +111,13 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
                 <button
                   key={color}
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, color }))}
+                  onClick={() => setFormData((prev) => ({ ...prev, color }))}
                   className={`w-12 h-12 rounded-xl border-2 transition-all duration-200 hover:scale-110 ${
                     formData.color === color
                       ? "border-gray-800 shadow-lg ring-2 ring-offset-2"
                       : "border-gray-200 hover:border-gray-400"
                   }`}
-                  style={{ 
+                  style={{
                     backgroundColor: color,
                     ringColor: formData.color === color ? color : undefined,
                   }}
@@ -128,7 +132,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
               name="isPublic"
               checked={formData.isPublic}
               onChange={handleChange}
-              className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-5 w-5 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
             />
             <label className="ml-3 block text-sm font-medium text-gray-800">
               공개 캘린더로 만들기
@@ -145,7 +149,7 @@ export function CalendarCreateModal({ onClose, onSuccess }: CalendarCreateModalP
             </button>
             <button
               type="submit"
-              className="px-6 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg"
+              className="px-6 py-3 text-sm font-semibold text-white bg-slate-600 hover:bg-slate-700 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg"
             >
               생성
             </button>

@@ -56,12 +56,12 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
                 disabled={isPending}
                 className={`py-4 px-6 font-semibold text-sm transition-all duration-200 disabled:opacity-50 rounded-t-xl ${
                   isActive
-                    ? "bg-indigo-50 text-indigo-600 border-b-2 border-indigo-500 shadow-sm"
+                    ? "bg-slate-50 text-slate-700 border-b-2 border-slate-600 shadow-sm"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
                 <div className="flex items-center space-x-2">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-indigo-600' : 'text-gray-500'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-slate-700' : 'text-gray-500'}`} />
                   <span>{tab.label}</span>
                 </div>
               </button>
