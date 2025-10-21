@@ -49,9 +49,9 @@ export class Team {
   @JoinColumn({ name: 'ownerId' })
   owner: User;
 
-  @OneToMany(() => TeamMember, (member) => member.team)
+  @OneToMany(() => TeamMember, (member) => member.team, { cascade: true })
   members: TeamMember[];
 
-  @OneToMany(() => Calendar, (calendar) => calendar.team)
+  @OneToMany(() => Calendar, (calendar) => calendar.team, { cascade: true })
   calendars: Calendar[];
 }
