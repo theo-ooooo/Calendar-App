@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X, Calendar, Clock, MapPin, Users, Repeat } from "lucide-react";
 import { useCalendar } from "@/hooks/useCalendar";
-import { useEvents } from "@/hooks/useEvents";
+import { eventsApi } from "@/lib/events";
 import { format, addDays } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -42,7 +42,6 @@ export function EventCreateModal({
   const [error, setError] = useState("");
 
   const { calendars, createCalendar } = useCalendar();
-  const { createEvent } = useEvents(new Date(), new Date(), []);
 
   const {
     register,
@@ -132,7 +131,7 @@ export function EventCreateModal({
         isPublic: false,
       };
 
-      await createEvent(eventData);
+      await eventsApi.createEvent(eventData);
       onSuccess();
     } catch (err: any) {
       setError(err.message || "일정 생성에 실패했습니다.");
