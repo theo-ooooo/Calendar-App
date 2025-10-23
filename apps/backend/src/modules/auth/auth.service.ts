@@ -55,10 +55,10 @@ export class AuthService {
 
     // 개인 캘린더 자동 생성
     const personalCalendar = this.calendarRepository.create({
-      name: '개인 캘린더',
-      description: '개인 일정을 관리하는 캘린더입니다.',
-      color: '#3B82F6', // 파란색
-      type: 'personal',
+      name: "개인 캘린더",
+      description: "개인 일정을 관리하는 캘린더입니다.",
+      color: "#3B82F6", // 파란색
+      type: "personal",
       ownerId: savedUser.id,
       isActive: true,
     });

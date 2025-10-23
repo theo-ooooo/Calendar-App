@@ -59,8 +59,6 @@ import { Calendar } from "./modules/calendar/entities/calendar.entity";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(EnsurePersonalCalendarMiddleware)
-      .forRoutes('*'); // 모든 라우트에 적용
+    consumer.apply(EnsurePersonalCalendarMiddleware).forRoutes("*"); // 모든 라우트에 적용
   }
 }

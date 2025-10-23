@@ -75,12 +75,14 @@ const isHoliday = (date: Date): { isHoliday: boolean; name?: string } => {
   const year = getYear(date);
   const month = getMonth(date) + 1; // getMonth는 0부터 시작
   const day = date.getDate();
-  
+
   const yearHolidays = HOLIDAYS[year as keyof typeof HOLIDAYS];
   if (!yearHolidays) return { isHoliday: false };
-  
-  const holiday = yearHolidays.find(h => h.month === month && h.day === day);
-  return holiday ? { isHoliday: true, name: holiday.name } : { isHoliday: false };
+
+  const holiday = yearHolidays.find((h) => h.month === month && h.day === day);
+  return holiday
+    ? { isHoliday: true, name: holiday.name }
+    : { isHoliday: false };
 };
 
 export function CalendarView({
@@ -297,7 +299,9 @@ export function CalendarView({
               key={index}
               className={`min-h-[80px] sm:min-h-[120px] p-2 sm:p-3 bg-white hover:bg-gray-50/50 transition-colors duration-150 ${
                 !isCurrentMonth ? "text-gray-300 bg-gray-50/30" : ""
-              } ${isToday ? "bg-blue-50/50" : ""} ${holidayInfo.isHoliday ? "bg-red-50/30" : ""}`}
+              } ${isToday ? "bg-blue-50/50" : ""} ${
+                holidayInfo.isHoliday ? "bg-red-50/30" : ""
+              }`}
             >
               <time
                 dateTime={format(day, "yyyy-MM-dd")}

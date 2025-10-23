@@ -21,12 +21,12 @@ export function useEvents(
 
   // useDeferredValue로 선택된 캘린더 상태를 지연 처리
   const deferredSelectedCalendars = useDeferredValue(selectedCalendars);
-  
-  console.log("useEvents 호출:", { 
-    startDate: format(startDate, "yyyy-MM-dd"), 
-    endDate: format(endDate, "yyyy-MM-dd"), 
-    selectedCalendars, 
-    deferredSelectedCalendars 
+
+  console.log("useEvents 호출:", {
+    startDate: format(startDate, "yyyy-MM-dd"),
+    endDate: format(endDate, "yyyy-MM-dd"),
+    selectedCalendars,
+    deferredSelectedCalendars,
   });
 
   // 날짜가 실제로 변경되었을 때만 이벤트를 다시 로드
@@ -63,9 +63,10 @@ export function useEvents(
       const filteredEvents = events.filter((event) => {
         const eventDate = new Date(event.startDate);
         const isSameDayMatch = isSameDay(eventDate, date);
-        const isCalendarSelected = deferredSelectedCalendars.length === 0 || 
+        const isCalendarSelected =
+          deferredSelectedCalendars.length === 0 ||
           deferredSelectedCalendars.includes(event.calendar.id);
-        
+
         console.log("이벤트 필터링:", {
           eventTitle: event.title,
           eventDate: event.startDate,
@@ -73,12 +74,12 @@ export function useEvents(
           isSameDayMatch,
           isCalendarSelected,
           selectedCalendars: deferredSelectedCalendars,
-          eventCalendarId: event.calendar.id
+          eventCalendarId: event.calendar.id,
         });
-        
+
         return isSameDayMatch && isCalendarSelected;
       });
-      
+
       console.log(`${format(date, "yyyy-MM-dd")} 일정:`, filteredEvents);
       return filteredEvents;
     },
@@ -87,9 +88,10 @@ export function useEvents(
 
   // 메모이제이션된 필터링된 이벤트
   const filteredEvents = useMemo(() => {
-    return events.filter((event) =>
-      deferredSelectedCalendars.length === 0 || 
-      deferredSelectedCalendars.includes(event.calendar.id)
+    return events.filter(
+      (event) =>
+        deferredSelectedCalendars.length === 0 ||
+        deferredSelectedCalendars.includes(event.calendar.id)
     );
   }, [events, deferredSelectedCalendars]);
 
