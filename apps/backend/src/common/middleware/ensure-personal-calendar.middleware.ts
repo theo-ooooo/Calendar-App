@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Calendar } from '../../modules/calendar/entities/calendar.entity';
 import { User } from '../../modules/user/entities/user.entity';
+import '../../types/express'; // Express 타입 확장 import
 
 @Injectable()
 export class EnsurePersonalCalendarMiddleware implements NestMiddleware {
@@ -16,9 +17,9 @@ export class EnsurePersonalCalendarMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     // 인증된 사용자인 경우에만 체크
-    if (req.user && req.user.id) {
+    if (req.user && (req.user as User).id) {
       try {
-        const userId = req.user.id;
+        const userId = (req.user as User).id;
         
         // 사용자의 개인 캘린더가 있는지 확인
         const personalCalendar = await this.calendarRepository.findOne({
