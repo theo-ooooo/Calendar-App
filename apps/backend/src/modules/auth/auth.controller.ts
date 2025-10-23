@@ -108,27 +108,37 @@ export class AuthController {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
+      // refresh token이 없으면 쿠키 삭제 후 에러
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
       throw new Error("Refresh token not found");
     }
 
-    const result = await this.authService.refreshAccessToken(refreshToken);
+    try {
+      const result = await this.authService.refreshAccessToken(refreshToken);
 
-    // 새로운 토큰을 쿠키에 설정
-    res.cookie("accessToken", result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15분
-    });
+      // 새로운 토큰을 쿠키에 설정
+      res.cookie("accessToken", result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000, // 15분
+      });
 
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-    });
+      res.cookie("refreshToken", result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      });
 
-    return { message: "토큰이 갱신되었습니다." };
+      return { message: "토큰이 갱신되었습니다." };
+    } catch (error) {
+      // refresh 실패 시 쿠키 삭제
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+      throw error;
+    }
   }
 
   @Post("logout")
