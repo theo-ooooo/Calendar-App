@@ -33,9 +33,14 @@ class ApiClient {
       if (response.status === 401 && !isRetry && !this.isRefreshing) {
         // refresh API 자체는 refresh를 시도하지 않음
         if (endpoint === "/auth/refresh") {
+          console.error("Refresh token expired, redirecting to login");
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
           throw new Error("Refresh token expired");
         }
-        
+
+        console.log("Attempting token refresh...");
         this.isRefreshing = true;
         try {
           // refresh API 호출
@@ -48,12 +53,14 @@ class ApiClient {
           });
 
           if (refreshResponse.ok) {
-            // Retry original request
+            // Refresh 성공, 원래 요청 재시도
             this.isRefreshing = false;
+            // 새로운 토큰이 쿠키에 설정되었으므로 원래 요청 재시도
             return this.request<T>(endpoint, options, true);
           } else {
             // Refresh failed, clear tokens and redirect to login
             this.isRefreshing = false;
+            console.error("Token refresh failed:", refreshResponse.status);
             if (typeof window !== "undefined") {
               try {
                 localStorage.removeItem("accessToken");
@@ -61,6 +68,7 @@ class ApiClient {
               } catch (e) {
                 // localStorage might not be available
               }
+              // 페이지 새로고침으로 쿠키도 함께 정리
               window.location.href = "/login";
             }
             throw new Error("Token refresh failed");

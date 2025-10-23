@@ -1,7 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "your-secret-key"
+);
+
+async function verifyToken(token: string): Promise<boolean> {
+  try {
+    await jwtVerify(token, JWT_SECRET);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 인증이 필요한 경로들
@@ -12,7 +26,16 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  const isAuthenticated = !!(accessToken || refreshToken);
+  let isAuthenticated = false;
+
+  // Access Token이 있으면 유효성 검증
+  if (accessToken) {
+    isAuthenticated = await verifyToken(accessToken);
+  }
+  // Access Token이 없거나 만료된 경우 Refresh Token 확인
+  else if (refreshToken) {
+    isAuthenticated = await verifyToken(refreshToken);
+  }
 
   // 인증이 필요한 페이지에 비인증 사용자 접근
   if (protectedRoutes.some((route) => pathname === route) && !isAuthenticated) {

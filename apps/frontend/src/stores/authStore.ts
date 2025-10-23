@@ -117,8 +117,19 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Failed to initialize auth:", error);
+          
+          // 토큰 만료나 인증 실패 시 로그아웃 처리
+          if (error?.message?.includes("401") || error?.message?.includes("Unauthorized")) {
+            // 쿠키 삭제를 위해 로그아웃 API 호출
+            try {
+              await authApi.logout();
+            } catch (logoutError) {
+              console.error("Logout failed:", logoutError);
+            }
+          }
+          
           set({
             user: null,
             isAuthenticated: false,
