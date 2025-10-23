@@ -58,32 +58,21 @@ class ApiClient {
             // 새로운 토큰이 쿠키에 설정되었으므로 원래 요청 재시도
             return this.request<T>(endpoint, options, true);
           } else {
-            // Refresh failed, clear tokens and redirect to login
+            // Refresh failed, redirect to login
             this.isRefreshing = false;
             console.error("Token refresh failed:", refreshResponse.status);
             if (typeof window !== "undefined") {
-              try {
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-              } catch (e) {
-                // localStorage might not be available
-              }
-              // 페이지 새로고침으로 쿠키도 함께 정리
+              // 쿠키는 서버에서 관리되므로 클라이언트에서는 리다이렉트만
               window.location.href = "/login";
             }
             throw new Error("Token refresh failed");
           }
         } catch (refreshError) {
-          // Refresh failed, clear tokens and redirect to login
+          // Refresh failed, redirect to login
           this.isRefreshing = false;
+          console.error("Refresh error:", refreshError);
           if (typeof window !== "undefined") {
-            // Clear any stored tokens (if any) - only on client side
-            try {
-              localStorage.removeItem("accessToken");
-              localStorage.removeItem("refreshToken");
-            } catch (e) {
-              // localStorage might not be available
-            }
+            // 쿠키는 서버에서 관리되므로 클라이언트에서는 리다이렉트만
             window.location.href = "/login";
           }
           throw refreshError;
