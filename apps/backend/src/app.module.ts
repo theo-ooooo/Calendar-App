@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CacheModule } from "@nestjs/cache-manager";
@@ -11,6 +11,9 @@ import { UserModule } from "./modules/user/user.module";
 import { TeamModule } from "./modules/team/team.module";
 import { CalendarModule } from "./modules/calendar/calendar.module";
 import { EventModule } from "./modules/event/event.module";
+import { EnsurePersonalCalendarMiddleware } from "./common/middleware/ensure-personal-calendar.middleware";
+import { User } from "./modules/user/entities/user.entity";
+import { Calendar } from "./modules/calendar/entities/calendar.entity";
 
 @Module({
   imports: [
@@ -49,6 +52,15 @@ import { EventModule } from "./modules/event/event.module";
     TeamModule,
     CalendarModule,
     EventModule,
+
+    // 미들웨어에서 사용할 엔티티들
+    TypeOrmModule.forFeature([User, Calendar]),
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(EnsurePersonalCalendarMiddleware)
+      .forRoutes('*'); // 모든 라우트에 적용
+  }
+}

@@ -10,6 +10,7 @@ import { Repository } from "typeorm";
 import * as bcrypt from "bcryptjs";
 
 import { User, AuthProvider } from "../user/entities/user.entity";
+import { Calendar } from "../calendar/entities/calendar.entity";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
@@ -20,6 +21,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Calendar)
+    private readonly calendarRepository: Repository<Calendar>,
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService
   ) {}
@@ -49,6 +52,19 @@ export class AuthService {
     });
 
     const savedUser = await this.userRepository.save(user);
+
+    // 개인 캘린더 자동 생성
+    const personalCalendar = this.calendarRepository.create({
+      name: '개인 캘린더',
+      description: '개인 일정을 관리하는 캘린더입니다.',
+      color: '#3B82F6', // 파란색
+      type: 'personal',
+      ownerId: savedUser.id,
+      isActive: true,
+    });
+
+    await this.calendarRepository.save(personalCalendar);
+    console.log(`Personal calendar created for user ${savedUser.id}`);
 
     // JWT 토큰 생성
     const payload: JwtPayload = {
