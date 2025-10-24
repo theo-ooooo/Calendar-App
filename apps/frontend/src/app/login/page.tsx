@@ -2,13 +2,13 @@ import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="w-full max-w-sm space-y-8">
         {/* 로고 */}
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-slate-600 rounded-xl flex items-center justify-center mb-6">
+          <div className="mx-auto w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center mb-8">
             <svg
-              className="w-8 h-8 text-white"
+              className="w-6 h-6 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -24,22 +24,15 @@ export default function LoginPage() {
         </div>
 
         {/* 로그인 폼 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-center">
-              로그인
-            </h2>
-          </div>
-          <LoginForm />
-        </div>
+        <LoginForm />
 
         {/* 하단 링크 */}
         <div className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-500">
             계정이 없으신가요?{" "}
             <a
               href="/register"
-              className="font-medium text-slate-600 hover:text-slate-700"
+              className="font-medium text-gray-700 hover:text-gray-900 transition-colors"
             >
               회원가입하기
             </a>
