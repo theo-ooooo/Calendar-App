@@ -34,8 +34,8 @@ export function RegisterForm() {
           disabled={isLoading}
           className="w-full flex items-center justify-center px-6 py-4 bg-[#FEE500] hover:bg-[#FDD835] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200 group"
         >
-          <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11L6.5 21.5c-1.5-1.5-1.5-3.5 0-5l3.773-3.773A13.5 13.5 0 0 1 12 3z"/>
+          <svg className="w-6 h-6 mr-3" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path opacity="0.9" fillRule="evenodd" clipRule="evenodd" d="M10.5 1.75781C5.80539 1.75781 2 4.73244 2 8.40197C2 10.6833 3.4718 12.6957 5.71307 13.8921L4.77001 17.3775C4.6867 17.6862 5.0349 17.9316 5.30223 17.753L9.43596 14.9923C9.78477 15.0263 10.1393 15.0459 10.5 15.0459C15.1944 15.0459 19 12.0713 19 8.40197C19 4.73244 15.1944 1.75781 10.5 1.75781Z" fill="black" />
           </svg>
           <span className="text-gray-800 font-medium text-base">
             {isLoading ? "가입 중..." : "카카오로 계속하기"}
