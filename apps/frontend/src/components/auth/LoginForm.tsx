@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [error, setError] = useState("");
-  const { isLoading } = useAuthStore();
+  const { isLoading, setLoading } = useAuthStore();
   const router = useRouter();
 
   const handleKakaoLogin = () => {
+    setLoading(true);
     const url = `${
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
     }/auth/kakao`;
