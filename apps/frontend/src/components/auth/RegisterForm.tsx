@@ -34,11 +34,7 @@ export function RegisterForm() {
           disabled={isLoading}
           className="w-full flex items-center justify-center px-6 py-4 bg-[#FEE500] hover:bg-[#FDD835] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200 group"
         >
-          <svg 
-            className="w-6 h-6 mr-3" 
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
+          <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11L6.5 21.5c-1.5-1.5-1.5-3.5 0-5l3.773-3.773A13.5 13.5 0 0 1 12 3z"/>
           </svg>
           <span className="text-gray-800 font-medium text-base">
