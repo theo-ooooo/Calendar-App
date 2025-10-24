@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { CalendarView } from "../calendar";
@@ -22,9 +22,15 @@ export function MainDashboard() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  // 인증 상태 확인
+  // 인증 상태 확인 - useEffect로 이동
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, user, router]);
+
+  // 인증되지 않았으면 빈 화면 표시
   if (!isAuthenticated || !user) {
-    router.push("/login");
     return null;
   }
 
