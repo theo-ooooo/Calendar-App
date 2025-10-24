@@ -6,8 +6,6 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "your-super-secret-jwt-key-here"
 );
 
-console.log("JWT_SECRET configured:", !!process.env.JWT_SECRET);
-
 async function verifyToken(token: string): Promise<boolean> {
   try {
     await jwtVerify(token, JWT_SECRET);
@@ -24,30 +22,25 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = ["/"];
   const authRoutes = ["/login", "/register"];
 
+  // auth 콜백 페이지는 미들웨어 체크 제외
+  if (pathname.startsWith("/auth/")) {
+    return NextResponse.next();
+  }
+
   // 쿠키에서 토큰 확인
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
-
-  console.log("Middleware - Tokens:", {
-    hasAccessToken: !!accessToken,
-    hasRefreshToken: !!refreshToken,
-    pathname,
-  });
 
   let isAuthenticated = false;
 
   // Access Token이 있으면 유효성 검증
   if (accessToken) {
     isAuthenticated = await verifyToken(accessToken);
-    console.log("Access token verification:", isAuthenticated);
   }
   // Access Token이 없거나 만료된 경우 Refresh Token 확인
   else if (refreshToken) {
     isAuthenticated = await verifyToken(refreshToken);
-    console.log("Refresh token verification:", isAuthenticated);
   }
-
-  console.log("Final authentication status:", isAuthenticated);
 
   // 인증이 필요한 페이지에 비인증 사용자 접근
   if (protectedRoutes.some((route) => pathname === route) && !isAuthenticated) {
