@@ -15,6 +15,10 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
+// 초기화 플래그 (전역)
+let isInitializing = false;
+let hasInitialized = false;
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -97,17 +101,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: async () => {
-        const state = get();
-        // 이미 완료된 경우 중복 호출 방지
-        if (state.isLoading === false && state.user !== null) {
+        // 전역 플래그로 중복 초기화 방지
+        if (hasInitialized || isInitializing) {
           return;
         }
 
-        // 이미 초기화 중인 경우 중복 호출 방지
-        if (state.isLoading === true) {
-          return;
-        }
-
+        isInitializing = true;
         set({ isLoading: true });
 
         try {
@@ -117,6 +116,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
+          hasInitialized = true;
         } catch (error: any) {
           console.error("Failed to initialize auth:", error);
 
@@ -138,6 +138,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             isLoading: false,
           });
+          hasInitialized = true;
+        } finally {
+          isInitializing = false;
         }
       },
     }),
