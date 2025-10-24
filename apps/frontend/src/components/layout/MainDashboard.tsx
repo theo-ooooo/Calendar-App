@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { useRouter } from "next/navigation";
 import { CalendarView } from "../calendar";
 import { TeamManagement } from "../team";
 import { EventModal } from "../event";
@@ -14,25 +13,13 @@ import { SuspenseFallback } from "../ui";
 type TabType = "calendar" | "teams" | "profile";
 
 export function MainDashboard() {
-  const { user, isAuthenticated, isLoading, refreshUser, logout } =
-    useAuthStore();
-  const router = useRouter();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>("calendar");
   const [isPending, startTransition] = useTransition();
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  // 인증 상태 확인 - useEffect로 이동
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, user, router]);
-
-  // 인증되지 않았으면 빈 화면 표시
-  if (!isAuthenticated || !user) {
-    return null;
-  }
+  // 미들웨어에서 이미 인증 체크를 하므로 여기서는 체크 불필요
 
   const handleTabChange = (tab: TabType) => {
     startTransition(() => {

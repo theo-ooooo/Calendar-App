@@ -15,13 +15,19 @@ function AuthInitializer() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // 쿠키가 있을 때만 초기화 실행 (서버에서만 실행되지 않도록)
-    if (typeof window !== "undefined") {
-      // 쿠키 확인
-      const hasCookie = document.cookie.includes("accessToken") || document.cookie.includes("refreshToken");
-      if (hasCookie) {
-        initialize();
-      }
+    // 클라이언트에서만 실행
+    if (typeof window === "undefined") return;
+    
+    // 쿠키 확인
+    const hasCookie =
+      document.cookie.includes("accessToken") ||
+      document.cookie.includes("refreshToken");
+    
+    console.log("AuthInitializer - Cookie check:", { hasCookie, isAuthenticated });
+    
+    // 쿠키가 있고 아직 인증되지 않았으면 초기화
+    if (hasCookie && !isAuthenticated) {
+      initialize();
     }
   }, []); // 빈 의존성 배열로 한 번만 실행
 
