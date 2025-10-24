@@ -9,7 +9,7 @@ export function useEvents(
   selectedCalendars: string[]
 ) {
   const queryClient = useQueryClient();
-  
+
   // useDeferredValue로 선택된 캘린더 상태를 지연 처리
   const deferredSelectedCalendars = useDeferredValue(selectedCalendars);
 
@@ -28,7 +28,8 @@ export function useEvents(
     refetch,
   } = useQuery({
     queryKey: ["events", startDateString, endDateString],
-    queryFn: () => eventsApi.getEventsByDateRange(startDateString, endDateString),
+    queryFn: () =>
+      eventsApi.getEventsByDateRange(startDateString, endDateString),
     staleTime: 5 * 60 * 1000, // 5분
     gcTime: 10 * 60 * 1000, // 10분
   });
@@ -123,8 +124,16 @@ export function useEvents(
 
   return {
     events,
-    isLoading: isLoading || createEventMutation.isPending || updateEventMutation.isPending || deleteEventMutation.isPending,
-    error: error?.message || createEventMutation.error?.message || updateEventMutation.error?.message || deleteEventMutation.error?.message,
+    isLoading:
+      isLoading ||
+      createEventMutation.isPending ||
+      updateEventMutation.isPending ||
+      deleteEventMutation.isPending,
+    error:
+      error?.message ||
+      createEventMutation.error?.message ||
+      updateEventMutation.error?.message ||
+      deleteEventMutation.error?.message,
     getEventsForDate,
     createEvent,
     updateEvent,

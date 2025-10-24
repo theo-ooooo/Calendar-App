@@ -46,9 +46,12 @@ export function useCalendar() {
     },
   });
 
-  const createCalendar = useCallback(async (data: any) => {
-    return createCalendarMutation.mutateAsync(data);
-  }, [createCalendarMutation]);
+  const createCalendar = useCallback(
+    async (data: any) => {
+      return createCalendarMutation.mutateAsync(data);
+    },
+    [createCalendarMutation]
+  );
 
   const toggleCalendar = useCallback((calendarId: string) => {
     setSelectedCalendars((prev) =>
