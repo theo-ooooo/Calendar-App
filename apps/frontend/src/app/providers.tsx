@@ -17,16 +17,19 @@ function AuthInitializer() {
   useEffect(() => {
     // 클라이언트에서만 실행
     if (typeof window === "undefined") return;
-    
+
     // 쿠키 확인
     const hasCookie =
       document.cookie.includes("accessToken") ||
       document.cookie.includes("refreshToken");
-    
-    console.log("AuthInitializer - Cookie check:", { hasCookie, isAuthenticated });
-    
-    // 쿠키가 있고 아직 인증되지 않았으면 초기화
-    if (hasCookie && !isAuthenticated) {
+
+    console.log("AuthInitializer - Cookie check:", {
+      hasCookie,
+      isAuthenticated,
+    });
+
+    // 쿠키가 있으면 초기화 (사용자 정보 없으면 profile API 호출)
+    if (hasCookie) {
       initialize();
     }
   }, []); // 빈 의존성 배열로 한 번만 실행

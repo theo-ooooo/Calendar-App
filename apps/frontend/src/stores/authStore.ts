@@ -101,8 +101,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: async () => {
-        // 전역 플래그로 중복 초기화 방지
-        if (hasInitialized || isInitializing) {
+        // 이미 초기화 중이면 중복 방지
+        if (isInitializing) {
+          return;
+        }
+
+        // 이미 사용자 정보가 있으면 스킵
+        const state = get();
+        if (state.user && state.isAuthenticated) {
           return;
         }
 
