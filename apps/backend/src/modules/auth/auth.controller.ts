@@ -201,11 +201,11 @@ export class AuthController {
   @Get("google/callback")
   @UseGuards(GoogleAuthGuard)
   @ApiOperation({ summary: "구글 로그인 콜백" })
-  async googleAuthCallback(@Request() req) {
+  async googleAuthCallback(@Request() req, @Res() res: Response) {
     const deviceInfo = req.headers["user-agent"];
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    return this.authService.findOrCreateSocialUser(
+    const result = await this.authService.findOrCreateSocialUser(
       req.user.provider,
       req.user.providerId,
       req.user.email,
@@ -214,6 +214,24 @@ export class AuthController {
       deviceInfo,
       ipAddress
     );
+
+    // 쿠키 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    // 프론트엔드 콜백 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
   }
 
   @Get("kakao")
@@ -226,11 +244,11 @@ export class AuthController {
   @Get("kakao/callback")
   @UseGuards(KakaoAuthGuard)
   @ApiOperation({ summary: "카카오 로그인 콜백" })
-  async kakaoAuthCallback(@Request() req) {
+  async kakaoAuthCallback(@Request() req, @Res() res: Response) {
     const deviceInfo = req.headers["user-agent"];
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    return this.authService.findOrCreateSocialUser(
+    const result = await this.authService.findOrCreateSocialUser(
       req.user.provider,
       req.user.providerId,
       req.user.email,
@@ -239,6 +257,24 @@ export class AuthController {
       deviceInfo,
       ipAddress
     );
+
+    // 쿠키 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    // 프론트엔드 콜백 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
   }
 
   @Get("naver")
@@ -251,11 +287,11 @@ export class AuthController {
   @Get("naver/callback")
   @UseGuards(NaverAuthGuard)
   @ApiOperation({ summary: "네이버 로그인 콜백" })
-  async naverAuthCallback(@Request() req) {
+  async naverAuthCallback(@Request() req, @Res() res: Response) {
     const deviceInfo = req.headers["user-agent"];
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    return this.authService.findOrCreateSocialUser(
+    const result = await this.authService.findOrCreateSocialUser(
       req.user.provider,
       req.user.providerId,
       req.user.email,
@@ -264,5 +300,23 @@ export class AuthController {
       deviceInfo,
       ipAddress
     );
+
+    // 쿠키 설정
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    // 프론트엔드 콜백 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
   }
 }
