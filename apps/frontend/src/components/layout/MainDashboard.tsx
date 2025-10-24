@@ -13,13 +13,23 @@ import { SuspenseFallback } from "../ui";
 type TabType = "calendar" | "teams" | "profile";
 
 export function MainDashboard() {
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>("calendar");
   const [isPending, startTransition] = useTransition();
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  // 미들웨어에서 이미 인증 체크를 하므로 여기서는 체크 불필요
+  // 사용자 정보 로딩 중
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">사용자 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleTabChange = (tab: TabType) => {
     startTransition(() => {

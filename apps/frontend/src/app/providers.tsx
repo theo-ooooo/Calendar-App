@@ -11,8 +11,6 @@ interface ProvidersProps {
 
 function AuthInitializer() {
   const initialize = useAuthStore((state) => state.initialize);
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     // 클라이언트에서만 실행
@@ -23,28 +21,13 @@ function AuthInitializer() {
       document.cookie.includes("accessToken") ||
       document.cookie.includes("refreshToken");
 
-    console.log("AuthInitializer - Cookie check:", {
-      hasCookie,
-      isAuthenticated,
-    });
+    console.log("AuthInitializer - Cookie check:", { hasCookie });
 
     // 쿠키가 있으면 초기화 (사용자 정보 없으면 profile API 호출)
     if (hasCookie) {
       initialize();
     }
   }, []); // 빈 의존성 배열로 한 번만 실행
-
-  // 로딩 중이면 로딩 화면 표시
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">인증 상태를 확인하는 중...</p>
-        </div>
-      </div>
-    );
-  }
 
   return null;
 }
