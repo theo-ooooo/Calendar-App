@@ -230,8 +230,8 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    // 프론트엔드 콜백 페이지로 리다이렉트
-    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
+    // 프론트엔드 메인 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
   }
 
   @Get("kakao")
@@ -273,8 +273,8 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    // 프론트엔드 콜백 페이지로 리다이렉트
-    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
+    // 프론트엔드 메인 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
   }
 
   @Get("naver")
@@ -316,7 +316,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    // 프론트엔드 콜백 페이지로 리다이렉트
-    res.redirect(process.env.FRONTEND_URL + "/auth/callback");
+    // 프론트엔드 메인 페이지로 리다이렉트
+    res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
   }
 }
