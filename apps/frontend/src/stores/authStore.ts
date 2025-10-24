@@ -102,7 +102,7 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         console.log("Initialize called - isInitializing:", isInitializing);
-        
+
         // 이미 초기화 중이면 중복 방지
         if (isInitializing) {
           console.log("Already initializing, skipping...");

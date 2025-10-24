@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { CalendarView } from "../calendar";
 import { TeamManagement } from "../team";
@@ -14,10 +14,17 @@ type TabType = "calendar" | "teams" | "profile";
 
 export function MainDashboard() {
   const { user, isLoading } = useAuthStore();
+  const initialize = useAuthStore((state) => state.initialize);
   const [activeTab, setActiveTab] = useState<TabType>("calendar");
   const [isPending, startTransition] = useTransition();
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+
+  useEffect(() => {
+    if (isLoading || !user) {
+      initialize();
+    }
+  }, [isLoading, user]);
 
   // 사용자 정보 로딩 중
   if (isLoading || !user) {
