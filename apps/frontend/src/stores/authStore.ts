@@ -101,28 +101,36 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: async () => {
+        console.log("Initialize called - isInitializing:", isInitializing);
+        
         // 이미 초기화 중이면 중복 방지
         if (isInitializing) {
+          console.log("Already initializing, skipping...");
           return;
         }
 
         // 이미 사용자 정보가 있으면 스킵
         const state = get();
         if (state.user && state.isAuthenticated) {
+          console.log("User already exists, skipping...");
           return;
         }
 
+        console.log("Starting initialization...");
         isInitializing = true;
         set({ isLoading: true });
 
         try {
+          console.log("Calling getProfile API...");
           const userData = await authApi.getProfile();
+          console.log("Profile data received:", userData);
           set({
             user: userData,
             isAuthenticated: true,
             isLoading: false,
           });
           hasInitialized = true;
+          console.log("Initialize completed successfully");
         } catch (error: any) {
           console.error("Failed to initialize auth:", error);
 
@@ -133,8 +141,10 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           hasInitialized = true;
+          console.log("Initialize failed, set to unauthenticated");
         } finally {
           isInitializing = false;
+          console.log("Initialize finally block - isInitializing reset");
         }
       },
     }),
