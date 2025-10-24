@@ -15,8 +15,14 @@ function AuthInitializer() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // 앱 시작 시 한 번만 초기화 실행
-    initialize();
+    // 쿠키가 있을 때만 초기화 실행 (서버에서만 실행되지 않도록)
+    if (typeof window !== "undefined") {
+      // 쿠키 확인
+      const hasCookie = document.cookie.includes("accessToken") || document.cookie.includes("refreshToken");
+      if (hasCookie) {
+        initialize();
+      }
+    }
   }, []); // 빈 의존성 배열로 한 번만 실행
 
   // 로딩 중이면 로딩 화면 표시
