@@ -1,11 +1,5 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useTransition,
-  useDeferredValue,
-} from "react";
+import { useCallback, useMemo, useDeferredValue } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, isSameDay } from "date-fns";
 import { eventsApi, Event } from "@/lib/events";
 
@@ -14,11 +8,8 @@ export function useEvents(
   endDate: Date,
   selectedCalendars: string[]
 ) {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
+  const queryClient = useQueryClient();
+  
   // useDeferredValue로 선택된 캘린더 상태를 지연 처리
   const deferredSelectedCalendars = useDeferredValue(selectedCalendars);
 
@@ -29,25 +20,68 @@ export function useEvents(
   );
   const endDateString = useMemo(() => format(endDate, "yyyy-MM-dd"), [endDate]);
 
-  const loadEvents = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const eventsData = await eventsApi.getEventsByDateRange(
-        startDateString,
-        endDateString
-      );
+  // React Query로 이벤트 데이터 페칭
+  const {
+    data: events = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["events", startDateString, endDateString],
+    queryFn: () => eventsApi.getEventsByDateRange(startDateString, endDateString),
+    staleTime: 5 * 60 * 1000, // 5분
+    gcTime: 10 * 60 * 1000, // 10분
+  });
 
-      startTransition(() => {
-        setEvents(eventsData);
-      });
-    } catch (err) {
-      setError("이벤트를 불러오는데 실패했습니다.");
-      console.error("이벤트 로드 실패:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [startDateString, endDateString]);
+  // 이벤트 생성 뮤테이션
+  const createEventMutation = useMutation({
+    mutationFn: (eventData: any) => eventsApi.createEvent(eventData),
+    onSuccess: (newEvent) => {
+      // 캐시 업데이트
+      queryClient.setQueryData(
+        ["events", startDateString, endDateString],
+        (oldEvents: Event[] = []) => [...oldEvents, newEvent]
+      );
+    },
+    onError: (error) => {
+      console.error("이벤트 생성 실패:", error);
+    },
+  });
+
+  // 이벤트 수정 뮤테이션
+  const updateEventMutation = useMutation({
+    mutationFn: ({ eventId, eventData }: { eventId: string; eventData: any }) =>
+      eventsApi.updateEvent(eventId, eventData),
+    onSuccess: (updatedEvent) => {
+      // 캐시 업데이트
+      queryClient.setQueryData(
+        ["events", startDateString, endDateString],
+        (oldEvents: Event[] = []) =>
+          oldEvents.map((event) =>
+            event.id === updatedEvent.id ? updatedEvent : event
+          )
+      );
+    },
+    onError: (error) => {
+      console.error("이벤트 수정 실패:", error);
+    },
+  });
+
+  // 이벤트 삭제 뮤테이션
+  const deleteEventMutation = useMutation({
+    mutationFn: (eventId: string) => eventsApi.deleteEvent(eventId),
+    onSuccess: (_, eventId) => {
+      // 캐시 업데이트
+      queryClient.setQueryData(
+        ["events", startDateString, endDateString],
+        (oldEvents: Event[] = []) =>
+          oldEvents.filter((event) => event.id !== eventId)
+      );
+    },
+    onError: (error) => {
+      console.error("이벤트 삭제 실패:", error);
+    },
+  });
 
   const getEventsForDate = useCallback(
     (date: Date) => {
@@ -58,20 +92,9 @@ export function useEvents(
           deferredSelectedCalendars.length === 0 ||
           deferredSelectedCalendars.includes(event.calendar.id);
 
-        console.log("이벤트 필터링:", {
-          eventTitle: event.title,
-          eventDate: event.startDate,
-          checkDate: format(date, "yyyy-MM-dd"),
-          isSameDayMatch,
-          isCalendarSelected,
-          selectedCalendars: deferredSelectedCalendars,
-          eventCalendarId: event.calendar.id,
-        });
-
         return isSameDayMatch && isCalendarSelected;
       });
 
-      console.log(`${format(date, "yyyy-MM-dd")} 일정:`, filteredEvents);
       return filteredEvents;
     },
     [events, deferredSelectedCalendars]
@@ -87,51 +110,25 @@ export function useEvents(
   }, [events, deferredSelectedCalendars]);
 
   const createEvent = async (eventData: any) => {
-    try {
-      const newEvent = await eventsApi.createEvent(eventData);
-      setEvents((prev) => [...prev, newEvent]);
-      return newEvent;
-    } catch (err) {
-      setError("이벤트 생성에 실패했습니다.");
-      throw err;
-    }
+    return createEventMutation.mutateAsync(eventData);
   };
 
   const updateEvent = async (eventId: string, eventData: any) => {
-    try {
-      const updatedEvent = await eventsApi.updateEvent(eventId, eventData);
-      setEvents((prev) =>
-        prev.map((event) => (event.id === eventId ? updatedEvent : event))
-      );
-      return updatedEvent;
-    } catch (err) {
-      setError("이벤트 수정에 실패했습니다.");
-      throw err;
-    }
+    return updateEventMutation.mutateAsync({ eventId, eventData });
   };
 
   const deleteEvent = async (eventId: string) => {
-    try {
-      await eventsApi.deleteEvent(eventId);
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
-    } catch (err) {
-      setError("이벤트 삭제에 실패했습니다.");
-      throw err;
-    }
+    return deleteEventMutation.mutateAsync(eventId);
   };
-
-  useEffect(() => {
-    loadEvents();
-  }, [startDateString, endDateString]);
 
   return {
     events,
-    isLoading,
-    error,
+    isLoading: isLoading || createEventMutation.isPending || updateEventMutation.isPending || deleteEventMutation.isPending,
+    error: error?.message || createEventMutation.error?.message || updateEventMutation.error?.message || deleteEventMutation.error?.message,
     getEventsForDate,
     createEvent,
     updateEvent,
     deleteEvent,
-    refetch: loadEvents,
+    refetch,
   };
 }

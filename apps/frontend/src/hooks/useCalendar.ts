@@ -1,55 +1,54 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useTransition,
-  useDeferredValue,
-} from "react";
+import { useState, useCallback, useMemo, useDeferredValue } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { calendarsApi, Calendar } from "@/lib/calendars";
 
 export function useCalendar() {
-  const [calendars, setCalendars] = useState<Calendar[]>([]);
+  const queryClient = useQueryClient();
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
   // useDeferredValue로 선택된 캘린더 상태를 지연 처리
   const deferredSelectedCalendars = useDeferredValue(selectedCalendars);
 
-  const loadCalendars = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // 백엔드에서 개인 + 팀 캘린더를 모두 가져오기
-      const allCalendars = await calendarsApi.getCalendars();
-
-      startTransition(() => {
-        setCalendars(allCalendars);
-        const calendarIds = allCalendars.map((cal) => cal.id);
-        console.log("캘린더 로드 완료:", { allCalendars, calendarIds });
+  // React Query로 캘린더 데이터 페칭
+  const {
+    data: calendars = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["calendars"],
+    queryFn: calendarsApi.getCalendars,
+    staleTime: 5 * 60 * 1000, // 5분
+    gcTime: 10 * 60 * 1000, // 10분
+    onSuccess: (data) => {
+      // 캘린더 로드 완료 시 모든 캘린더 선택
+      if (data && data.length > 0 && selectedCalendars.length === 0) {
+        const calendarIds = data.map((cal) => cal.id);
         setSelectedCalendars(calendarIds);
-      });
-    } catch (err) {
-      setError("캘린더를 불러오는데 실패했습니다.");
-      console.error("캘린더 로드 실패:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      }
+    },
+  });
+
+  // 캘린더 생성 뮤테이션
+  const createCalendarMutation = useMutation({
+    mutationFn: (data: any) => calendarsApi.createCalendar(data),
+    onSuccess: (newCalendar) => {
+      // 캐시 업데이트
+      queryClient.setQueryData(
+        ["calendars"],
+        (oldCalendars: Calendar[] = []) => [...oldCalendars, newCalendar]
+      );
+      // 새로 생성된 캘린더를 선택 목록에 추가
+      setSelectedCalendars((prev) => [...prev, newCalendar.id]);
+    },
+    onError: (error) => {
+      console.error("캘린더 생성 실패:", error);
+    },
+  });
 
   const createCalendar = useCallback(async (data: any) => {
-    try {
-      const newCalendar = await calendarsApi.createCalendar(data);
-      setCalendars((prev) => [...prev, newCalendar]);
-      return newCalendar;
-    } catch (err) {
-      setError("캘린더 생성에 실패했습니다.");
-      throw err;
-    }
-  }, []);
+    return createCalendarMutation.mutateAsync(data);
+  }, [createCalendarMutation]);
 
   const toggleCalendar = useCallback((calendarId: string) => {
     setSelectedCalendars((prev) =>
@@ -71,20 +70,15 @@ export function useCalendar() {
     return deferredSelectedCalendars.length;
   }, [deferredSelectedCalendars]);
 
-  useEffect(() => {
-    loadCalendars();
-  }, [loadCalendars]);
-
   return {
     calendars,
     selectedCalendars: deferredSelectedCalendars,
     filteredCalendars,
     selectedCount,
-    isLoading,
-    isPending,
-    error,
+    isLoading: isLoading || createCalendarMutation.isPending,
+    error: error?.message || createCalendarMutation.error?.message,
     toggleCalendar,
     createCalendar,
-    refetch: loadCalendars,
+    refetch,
   };
 }
