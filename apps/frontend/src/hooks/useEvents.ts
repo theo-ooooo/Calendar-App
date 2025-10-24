@@ -22,13 +22,6 @@ export function useEvents(
   // useDeferredValue로 선택된 캘린더 상태를 지연 처리
   const deferredSelectedCalendars = useDeferredValue(selectedCalendars);
 
-  console.log("useEvents 호출:", {
-    startDate: format(startDate, "yyyy-MM-dd"),
-    endDate: format(endDate, "yyyy-MM-dd"),
-    selectedCalendars,
-    deferredSelectedCalendars,
-  });
-
   // 날짜가 실제로 변경되었을 때만 이벤트를 다시 로드
   const startDateString = useMemo(
     () => format(startDate, "yyyy-MM-dd"),
@@ -40,12 +33,10 @@ export function useEvents(
     try {
       setIsLoading(true);
       setError(null);
-      console.log("이벤트 로드 시작:", { startDateString, endDateString });
       const eventsData = await eventsApi.getEventsByDateRange(
         startDateString,
         endDateString
       );
-      console.log("이벤트 데이터:", eventsData);
 
       startTransition(() => {
         setEvents(eventsData);

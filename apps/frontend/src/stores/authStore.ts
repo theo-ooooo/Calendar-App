@@ -120,19 +120,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error: any) {
           console.error("Failed to initialize auth:", error);
 
-          // 토큰 만료나 인증 실패 시 로그아웃 처리
-          if (
-            error?.message?.includes("401") ||
-            error?.message?.includes("Unauthorized")
-          ) {
-            // 쿠키 삭제를 위해 로그아웃 API 호출
-            try {
-              await authApi.logout();
-            } catch (logoutError) {
-              console.error("Logout failed:", logoutError);
-            }
-          }
-
+          // 에러 발생 시 단순히 비인증 상태로 설정만 하고 추가 API 호출 안 함
           set({
             user: null,
             isAuthenticated: false,
