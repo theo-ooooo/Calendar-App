@@ -55,7 +55,6 @@ export class EventController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string
   ) {
-    console.log(req.user);
     return this.eventService.getEventsByDateRange(
       new Date(startDate),
       new Date(endDate),
@@ -63,18 +62,31 @@ export class EventController {
     );
   }
 
-  @Get("search")
+  @Get("search/:query")
   @ApiOperation({ summary: "이벤트 검색" })
   @ApiResponse({ status: 200, description: "검색 결과 조회 성공" })
-  async searchEvents(@Request() req, @Query("q") query: string) {
+  async searchEvents(@Request() req, @Param("query") query: string) {
     return this.eventService.searchEvents(query, req.user.id);
   }
 
   @Get("upcoming")
   @ApiOperation({ summary: "다가오는 이벤트 조회" })
   @ApiResponse({ status: 200, description: "다가오는 이벤트 조회 성공" })
-  async getUpcomingEvents(@Request() req, @Query("limit") limit?: number) {
-    return this.eventService.getUserUpcomingEvents(req.user.id, limit);
+  async getUpcomingEvents(@Request() req) {
+    return this.eventService.getUserUpcomingEvents(req.user.id);
+  }
+
+  @Get("upcoming/:limit")
+  @ApiOperation({ summary: "다가오는 이벤트 조회 (제한)" })
+  @ApiResponse({ status: 200, description: "다가오는 이벤트 조회 성공" })
+  async getUpcomingEventsWithLimit(
+    @Request() req,
+    @Param("limit") limit: string
+  ) {
+    return this.eventService.getUserUpcomingEvents(
+      req.user.id,
+      parseInt(limit, 10)
+    );
   }
 
   @Get(":id")
