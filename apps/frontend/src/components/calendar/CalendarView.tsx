@@ -18,11 +18,13 @@ import {
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, CalendarPlus } from "lucide-react";
 import { Event } from "@/lib/events";
+import { Calendar } from "@/lib/calendars";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useEvents } from "@/hooks/useEvents";
 import { useTeams } from "@/hooks/useTeams";
 import { CalendarCreateModal } from "./CalendarCreateModal";
 import { EventCreateModal } from "../event/EventCreateModal";
+import { DateEventsModal } from "../event/DateEventsModal";
 
 interface CalendarViewProps {
   onEventClick?: (event: Event) => void;
@@ -92,6 +94,9 @@ export function CalendarView({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEventCreateModal, setShowEventCreateModal] = useState(false);
+  const [showDateEventsModal, setShowDateEventsModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [selectedCalendarType, setSelectedCalendarType] =
     useState<string>("personal");
 
@@ -126,25 +131,30 @@ export function CalendarView({
 
   // 선택된 타입에 따른 캘린더 필터링
   const filteredCalendars = useMemo(() => {
+    const calendarList = calendars as Calendar[];
     if (selectedCalendarType === "personal") {
-      return calendars.filter((cal) => cal.type === "personal");
+      return calendarList.filter((cal) => cal.type === "personal");
     } else {
       // 팀 ID로 필터링
-      return calendars.filter((cal) => cal.team?.id === selectedCalendarType);
+      return calendarList.filter(
+        (cal) => cal.team?.id === selectedCalendarType
+      );
     }
   }, [calendars, selectedCalendarType]);
 
   // 드롭다운 옵션 생성
   const dropdownOptions = useMemo(() => {
-    const options = [
-      { value: "personal", label: "개인", type: "personal" as const },
-    ];
+    const options: Array<{
+      value: string;
+      label: string;
+      type: "personal" | "team";
+    }> = [{ value: "personal", label: "개인", type: "personal" }];
 
     teams.forEach((team) => {
       options.push({
         value: team.id,
         label: team.name,
-        type: "team" as const,
+        type: "team",
       });
     });
 
@@ -236,7 +246,7 @@ export function CalendarView({
       {/* 캘린더 필터 */}
       <div className="p-4 sm:p-6 bg-gray-50/50 border-b border-gray-100">
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          {filteredCalendars.map((cal) => (
+          {filteredCalendars.map((cal: any) => (
             <label
               key={cal.id}
               className={`inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 ${
@@ -297,7 +307,11 @@ export function CalendarView({
           return (
             <div
               key={index}
-              className={`min-h-[80px] sm:min-h-[120px] p-2 sm:p-3 bg-white hover:bg-gray-50/50 transition-colors duration-150 ${
+              onClick={() => {
+                setSelectedDate(day);
+                setShowDateEventsModal(true);
+              }}
+              className={`min-h-[80px] sm:min-h-[120px] p-2 sm:p-3 bg-white hover:bg-gray-50/50 transition-colors duration-150 cursor-pointer ${
                 !isCurrentMonth ? "text-gray-300 bg-gray-50/30" : ""
               } ${isToday ? "bg-blue-50/50" : ""} ${
                 holidayInfo.isHoliday ? "bg-red-50/30" : ""
@@ -324,7 +338,12 @@ export function CalendarView({
                     {dayEvents.slice(0, 3).map((event) => (
                       <div
                         key={event.id}
-                        onClick={() => onEventClick?.(event)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingEvent(event);
+                          setShowEventCreateModal(true);
+                          onEventClick?.(event);
+                        }}
                         className="text-xs truncate rounded-lg px-1.5 sm:px-2 py-1 sm:py-1.5 cursor-pointer hover:shadow-sm transition-all duration-150 hover:scale-105"
                         style={{
                           backgroundColor: `${event.calendar.color}15`,
@@ -360,13 +379,31 @@ export function CalendarView({
         />
       )}
 
-      {/* 일정 생성 모달 */}
+      {/* 일정 생성/수정 모달 */}
       {showEventCreateModal && (
         <EventCreateModal
-          onClose={() => setShowEventCreateModal(false)}
+          onClose={() => {
+            setShowEventCreateModal(false);
+            setEditingEvent(null);
+          }}
           onSuccess={() => {
             setShowEventCreateModal(false);
+            setEditingEvent(null);
             // 이벤트 목록 새로고침
+            refetchEvents();
+          }}
+          selectedCalendarType={selectedCalendarType}
+          editingEvent={editingEvent}
+        />
+      )}
+
+      {/* 날짜별 이벤트 모달 */}
+      {showDateEventsModal && selectedDate && (
+        <DateEventsModal
+          date={selectedDate}
+          onClose={() => {
+            setShowDateEventsModal(false);
+            setSelectedDate(null);
             refetchEvents();
           }}
           selectedCalendarType={selectedCalendarType}
