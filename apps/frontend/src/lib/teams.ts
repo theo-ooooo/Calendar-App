@@ -93,8 +93,7 @@ export const teamsApi = {
   // 초대 코드로 팀 참여
   joinTeam: async (inviteCode: string): Promise<Team> => {
     const response = await api.post<{ status: boolean; data: Team }>(
-      "/teams/join",
-      { code: inviteCode }
+      `/teams/join/${inviteCode}`
     );
     return response.data;
   },
