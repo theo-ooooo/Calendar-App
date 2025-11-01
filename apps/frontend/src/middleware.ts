@@ -47,6 +47,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  console.log("isAuthenticated", process.env.JWT_SECRET);
+
   // 인증된 사용자가 로그인/회원가입 페이지 접근
   if (
     authRoutes.some((route) => pathname.startsWith(route)) &&
