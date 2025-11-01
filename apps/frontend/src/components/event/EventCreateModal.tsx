@@ -4,9 +4,17 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Calendar, Clock, MapPin, Users, Repeat } from "lucide-react";
+import {
+  X,
+  Calendar as CalendarIcon,
+  Clock,
+  MapPin,
+  Users,
+  Repeat,
+} from "lucide-react";
 import { useCalendar } from "@/hooks/useCalendar";
-import { eventsApi } from "@/lib/events";
+import { eventsApi, Event } from "@/lib/events";
+import { Calendar } from "@/lib/calendars";
 import { format, addDays } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -18,7 +26,7 @@ const eventSchema = z.object({
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   location: z.string().optional(),
-  isAllDay: z.boolean().default(false),
+  isAllDay: z.boolean(),
   calendarId: z.string().min(1, "캘린더를 선택해주세요"),
   attendeeEmails: z.string().optional(),
 });
@@ -30,6 +38,7 @@ interface EventCreateModalProps {
   onSuccess: () => void;
   selectedDate?: Date;
   selectedCalendarType?: string;
+  editingEvent?: Event | null;
 }
 
 export function EventCreateModal({
@@ -37,6 +46,7 @@ export function EventCreateModal({
   onSuccess,
   selectedDate,
   selectedCalendarType = "personal",
+  editingEvent,
 }: EventCreateModalProps) {
   const [isAllDay, setIsAllDay] = useState(true);
   const [error, setError] = useState("");
@@ -48,11 +58,12 @@ export function EventCreateModal({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      isAllDay: true,
+      isAllDay: false,
       startDate: selectedDate
         ? format(selectedDate, "yyyy-MM-dd")
         : format(new Date(), "yyyy-MM-dd"),
@@ -62,17 +73,48 @@ export function EventCreateModal({
     },
   });
 
+  // 수정 모드일 때 폼 데이터 설정
+  useEffect(() => {
+    if (editingEvent) {
+      const calendarList = calendars as Calendar[];
+      if (calendarList.length > 0) {
+        const startDate = new Date(editingEvent.startDate);
+        const endDate = new Date(editingEvent.endDate);
+        const isAllDayEvent = editingEvent.isAllDay;
+
+        setIsAllDay(isAllDayEvent);
+
+        reset({
+          title: editingEvent.title,
+          description: editingEvent.description || "",
+          startDate: format(startDate, "yyyy-MM-dd"),
+          endDate: format(endDate, "yyyy-MM-dd"),
+          startTime: isAllDayEvent ? "" : format(startDate, "HH:mm"),
+          endTime: isAllDayEvent ? "" : format(endDate, "HH:mm"),
+          location: editingEvent.location || "",
+          isAllDay: isAllDayEvent,
+          calendarId: editingEvent.calendar?.id || calendarList[0]?.id || "",
+          attendeeEmails:
+            editingEvent.attendees?.map((a) => a.email).join(", ") || "",
+        });
+      }
+    }
+  }, [editingEvent, reset, calendars]);
+
   const watchedStartDate = watch("startDate");
   const watchedStartTime = watch("startTime");
   const watchedEndTime = watch("endTime");
 
   // 선택된 타입에 따른 캘린더 필터링
   const filteredCalendars = useMemo(() => {
+    const calendarList = calendars as Calendar[];
     if (selectedCalendarType === "personal") {
-      return calendars.filter((cal) => cal.type === "personal");
+      return calendarList.filter((cal) => cal.type === "personal");
     } else {
       // 팀 ID로 필터링
-      return calendars.filter((cal) => cal.team?.id === selectedCalendarType);
+      return calendarList.filter(
+        (cal) => cal.team?.id === selectedCalendarType
+      );
     }
   }, [calendars, selectedCalendarType]);
 
@@ -117,21 +159,38 @@ export function EventCreateModal({
             .filter(Boolean)
         : [];
 
-      const eventData = {
-        title: data.title,
-        description: data.description || "",
-        startDate: startDateTime,
-        endDate: endDateTime,
-        location: data.location || "",
-        isAllDay,
-        calendarId: data.calendarId,
-        attendeeEmails,
-        status: "confirmed" as const,
-        repeatType: "none" as const,
-        isPublic: false,
-      };
-
-      await eventsApi.createEvent(eventData);
+      if (editingEvent) {
+        // 수정 시에는 calendarId 제외
+        const updateData = {
+          title: data.title,
+          description: data.description || "",
+          startDate: startDateTime,
+          endDate: endDateTime,
+          location: data.location || "",
+          isAllDay,
+          attendeeEmails,
+          status: "confirmed" as const,
+          repeatType: "none" as const,
+          isPublic: false,
+        };
+        await eventsApi.updateEvent(editingEvent.id, updateData);
+      } else {
+        // 생성 시에는 calendarId 포함
+        const createData = {
+          title: data.title,
+          description: data.description || "",
+          startDate: startDateTime,
+          endDate: endDateTime,
+          location: data.location || "",
+          isAllDay,
+          calendarId: data.calendarId,
+          attendeeEmails,
+          status: "confirmed" as const,
+          repeatType: "none" as const,
+          isPublic: false,
+        };
+        await eventsApi.createEvent(createData);
+      }
       onSuccess();
     } catch (err: any) {
       setError(err.message || "일정 생성에 실패했습니다.");
@@ -143,7 +202,9 @@ export function EventCreateModal({
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-900">새 일정 만들기</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {editingEvent ? "일정 수정" : "새 일정 만들기"}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
@@ -193,13 +254,13 @@ export function EventCreateModal({
           {/* 캘린더 선택 */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-3">
-              <Calendar className="w-4 h-4 inline mr-2" />
+              <CalendarIcon className="w-4 h-4 inline mr-2" />
               캘린더 선택 *
             </label>
 
             {/* 캘린더 목록 */}
             <div className="space-y-2">
-              {filteredCalendars.map((calendar) => (
+              {filteredCalendars.map((calendar: Calendar) => (
                 <label
                   key={calendar.id}
                   className="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors duration-200"
@@ -369,7 +430,13 @@ export function EventCreateModal({
               disabled={isSubmitting}
               className="px-6 py-3 text-sm font-semibold text-white bg-slate-600 hover:bg-slate-700 disabled:opacity-50 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg"
             >
-              {isSubmitting ? "생성 중..." : "일정 생성"}
+              {isSubmitting
+                ? editingEvent
+                  ? "수정 중..."
+                  : "생성 중..."
+                : editingEvent
+                ? "일정 수정"
+                : "일정 생성"}
             </button>
           </div>
         </form>

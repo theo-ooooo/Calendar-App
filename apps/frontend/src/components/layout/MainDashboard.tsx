@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { CalendarView } from "../calendar";
 import { TeamManagement } from "../team";
-import { EventModal } from "../event";
+import { EventCreateModal } from "../event";
 import { UserProfile } from "./UserProfile";
 import { Header } from "./Header";
 import { Navigation } from "./Navigation";
@@ -87,11 +87,15 @@ export function MainDashboard() {
 
       {/* 이벤트 모달 */}
       {showEventModal && (
-        <EventModal
-          event={selectedEvent}
-          onClose={() => setShowEventModal(false)}
-          onSave={() => {
+        <EventCreateModal
+          editingEvent={selectedEvent}
+          onClose={() => {
             setShowEventModal(false);
+            setSelectedEvent(null);
+          }}
+          onSuccess={() => {
+            setShowEventModal(false);
+            setSelectedEvent(null);
             // 이벤트 저장 후 캘린더 새로고침 로직
           }}
         />
