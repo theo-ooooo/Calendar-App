@@ -10,12 +10,30 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
+  private buildUrl(endpoint: string, params?: Record<string, any>): string {
+    let url = `${this.baseURL}${endpoint}`;
+    if (params) {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+    return url;
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {},
+    options: RequestInit & { params?: Record<string, any> } = {},
     isRetry = false
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    const { params, ...requestOptions } = options;
+    const url = this.buildUrl(endpoint, params);
 
     const config: RequestInit = {
       ...options,
@@ -92,14 +110,17 @@ class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  async get<T>(
+    endpoint: string,
+    options?: RequestInit & { params?: Record<string, any> }
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
   async post<T>(
     endpoint: string,
     data?: any,
-    options?: RequestInit
+    options?: RequestInit & { params?: Record<string, any> }
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
@@ -111,7 +132,7 @@ class ApiClient {
   async put<T>(
     endpoint: string,
     data?: any,
-    options?: RequestInit
+    options?: RequestInit & { params?: Record<string, any> }
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
@@ -120,7 +141,10 @@ class ApiClient {
     });
   }
 
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  async delete<T>(
+    endpoint: string,
+    options?: RequestInit & { params?: Record<string, any> }
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 }
